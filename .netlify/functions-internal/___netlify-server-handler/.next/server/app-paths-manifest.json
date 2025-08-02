@@ -4,8 +4,8 @@
   "/api/quality/route": "app/api/quality/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/create/page": "app/create/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
   "/page": "app/page.js",
   "/quality/page": "app/quality/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/workflow/page": "app/workflow/page.js"
 }

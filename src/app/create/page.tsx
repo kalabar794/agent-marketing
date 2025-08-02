@@ -146,10 +146,11 @@ export default function CreateContent() {
   const selectedTypeData = contentTypes.find(type => type.id === selectedType);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-slate-900">
       {/* Header Section with Vibrant Background */}
-      <section className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 py-16">
-        <div className="container mx-auto px-4">
+      <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 py-16">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-blue-500/10 to-purple-600/20 pointer-events-none"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center">
             <div className="space-y-6">
               <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium border border-white/30">
@@ -172,7 +173,7 @@ export default function CreateContent() {
 
         {/* Content Type Selection */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          <h2 className="text-3xl font-bold text-white mb-6 text-center">
             What type of content do you want to create?
           </h2>
           

@@ -4,8 +4,8 @@
   "/api/quality/route": "/api/quality",
   "/favicon.ico/route": "/favicon.ico",
   "/create/page": "/create",
-  "/dashboard/page": "/dashboard",
   "/page": "/",
   "/quality/page": "/quality",
+  "/dashboard/page": "/dashboard",
   "/workflow/page": "/workflow"
 }

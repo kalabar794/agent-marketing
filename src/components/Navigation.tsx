@@ -18,7 +18,6 @@ const navigation = [
   { name: 'Create Content', href: '/create' },
   { name: 'Agent Workflow', href: '/workflow' },
   { name: 'Quality Control', href: '/quality' },
-  { name: 'Settings', href: '/settings' },
 ];
 
 export function Navigation() {

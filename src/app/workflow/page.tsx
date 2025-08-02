@@ -124,7 +124,7 @@ function WorkflowPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-card flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-foreground mb-2">Loading Workflow...</h2>
@@ -136,7 +136,7 @@ function WorkflowPageContent() {
 
   if (error || !workflowStatus) {
     return (
-      <div className="min-h-screen bg-gradient-card flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-foreground mb-2">Workflow Error</h2>
@@ -150,7 +150,7 @@ function WorkflowPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-card">
+    <div className="min-h-screen bg-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header with Project Info */}
         <div className="mb-8">
@@ -426,11 +426,11 @@ function WorkflowPageContent() {
 export default function WorkflowPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Workflow...</h2>
-          <p className="text-gray-600">Preparing your content generation workspace</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Loading Workflow...</h2>
+          <p className="text-gray-300">Preparing your content generation workspace</p>
         </div>
       </div>
     }>

@@ -1,0 +1,61 @@
+npm warn Unknown user config "public-hoist-pattern". This will stop working in the next major version of npm.
+npm warn Unknown user config "strict-peer-dependencies". This will stop working in the next major version of npm.
+npm warn Unknown user config "auto-install-peers". This will stop working in the next major version of npm.
+
+> agentic-marketing-generator@0.1.0 dev
+> next dev --turbopack --port 3005
+
+ ⚠ Warning: Found multiple lockfiles. Selecting /Users/jonathonc/pnpm-lock.yaml.
+   Consider removing the lockfiles at:
+   * /Users/jonathonc/Auto1111/claude/marketing-agent-v2/agentic-marketing-generator/package-lock.json
+
+   ▲ Next.js 15.4.5 (Turbopack)
+   - Local:        http://localhost:3005
+   - Network:      http://192.168.1.49:3005
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 619ms
+ ○ Compiling /create ...
+ ✓ Compiled /create in 1132ms
+ GET /create/ 200 in 1335ms
+ ✓ Compiled /favicon.ico in 96ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 330ms
+ ✓ Compiled /api/content/generate in 118ms
+Executing agent: market-researcher
+ POST /api/content/generate/ 200 in 154ms
+undefined LLM call attempt 1 failed: API request failed: 404 Not Found - {"type":"error","error":{"type":"not_found_error","message":"model: claude-3-sonnet-20240229"}}
+ ○ Compiling /workflow ...
+ ✓ Compiled /workflow in 621ms
+ GET /workflow/?id=workflow-1754151005381-f30tfw70w 200 in 698ms
+ GET /api/content/generate/?workflowId=workflow-1754151005381-f30tfw70w 200 in 18ms
+ GET /api/content/generate/?workflowId=workflow-1754151005381-f30tfw70w 200 in 18ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 218ms
+undefined LLM call attempt 2 failed: API request failed: 404 Not Found - {"type":"error","error":{"type":"not_found_error","message":"model: claude-3-sonnet-20240229"}}
+ GET /api/content/generate/?workflowId=workflow-1754151005381-f30tfw70w 200 in 16ms
+undefined LLM call attempt 3 failed: API request failed: 404 Not Found - {"type":"error","error":{"type":"not_found_error","message":"model: claude-3-sonnet-20240229"}}
+Agent market-researcher failed: Error: Market research failed: Error: undefined failed after 3 attempts. Last error: API request failed: 404 Not Found - {"type":"error","error":{"type":"not_found_error","message":"model: claude-3-sonnet-20240229"}}
+    at MarketResearcher.execute (src/lib/agents/market-researcher.ts:22:12)
+    at async AgentOrchestrator.executeAgent (src/lib/agents/orchestrator.ts:40:21)
+    at async ContentWorkflow.executeWorkflow (src/lib/workflow.ts:175:23)
+  20 |       return this.parseResponse(response);
+  21 |     } catch (error) {
+> 22 |       throw new Error(`Market research failed: ${error}`);
+     |            ^
+  23 |     }
+  24 |   }
+  25 |
+Workflow execution failed: Error: Market research failed: Error: undefined failed after 3 attempts. Last error: API request failed: 404 Not Found - {"type":"error","error":{"type":"not_found_error","message":"model: claude-3-sonnet-20240229"}}
+    at MarketResearcher.execute (src/lib/agents/market-researcher.ts:22:12)
+    at async AgentOrchestrator.executeAgent (src/lib/agents/orchestrator.ts:40:21)
+    at async ContentWorkflow.executeWorkflow (src/lib/workflow.ts:175:23)
+  20 |       return this.parseResponse(response);
+  21 |     } catch (error) {
+> 22 |       throw new Error(`Market research failed: ${error}`);
+     |            ^
+  23 |     }
+  24 |   }
+  25 |
+ GET /api/content/generate/?workflowId=workflow-1754151005381-f30tfw70w 200 in 15ms
+ GET /api/content/generate/?workflowId=workflow-1754151005381-f30tfw70w 200 in 14ms
+[?25h

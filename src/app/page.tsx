@@ -20,10 +20,10 @@ const stats = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-purple-50 to-blue-50">
+    <div className="min-h-screen bg-slate-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600">
-        <div className="absolute inset-0 bg-black/10"></div>
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-pink-500/10 to-purple-600/20 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-6 py-20 lg:py-28 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Content */}
@@ -121,8 +121,8 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-pink-400/20 rounded-full blur-lg animate-float-delay-2"></div>
       </section>
 
-      {/* Vibrant Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-100 via-pink-100 to-orange-100">
+      {/* Stats Section */}
+      <section className="py-20 bg-gradient-to-r from-slate-800 to-slate-900">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => {
@@ -133,20 +133,20 @@ export default function Home() {
                 'from-pink-500 to-rose-500'
               ];
               const bgColors = [
-                'bg-gradient-to-br from-orange-50 to-red-50 border-orange-200',
-                'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200',
-                'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200', 
-                'bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200'
+                'bg-gradient-to-br from-slate-700 to-slate-800 border-orange-500/30',
+                'bg-gradient-to-br from-slate-700 to-slate-800 border-blue-500/30',
+                'bg-gradient-to-br from-slate-700 to-slate-800 border-green-500/30', 
+                'bg-gradient-to-br from-slate-700 to-slate-800 border-pink-500/30'
               ];
               return (
                 <div key={index} className={`text-center p-6 rounded-2xl ${bgColors[index]} border-2 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl`}>
                   <div className={`text-4xl lg:text-5xl font-bold bg-gradient-to-r ${colors[index]} bg-clip-text text-transparent mb-3`}>
                     {stat.value}
                   </div>
-                  <div className="font-bold text-gray-800 mb-2 text-lg">
+                  <div className="font-bold text-white mb-2 text-lg">
                     {stat.label}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-300">
                     {stat.description}
                   </div>
                 </div>
@@ -225,8 +225,9 @@ export default function Home() {
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600">
-        <div className="max-w-4xl mx-auto text-center px-6">
+      <section className="py-20 bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/30 via-pink-500/20 to-purple-600/30 pointer-events-none"></div>
+        <div className="max-w-4xl mx-auto text-center px-6 relative z-10">
           <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Marketing Content?
           </h2>
@@ -236,7 +237,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/create">
-              <Button className="bg-white text-gray-900 hover:bg-gray-100 font-bold text-lg px-8 py-4 h-auto rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-200">
+              <Button className="bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600 font-bold text-lg px-8 py-4 h-auto rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-200">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
