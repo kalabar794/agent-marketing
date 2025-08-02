@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { WorkflowStatus, QualityScores } from "@/types/content";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -116,7 +116,7 @@ const agentFeedback = [
   }
 ];
 
-export default function QualityPage() {
+function QualityPageContent() {
   const searchParams = useSearchParams();
   const workflowId = searchParams.get('id');
   
@@ -318,11 +318,11 @@ export default function QualityPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-card flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Loading Quality Analysis...</h2>
-          <p className="text-muted-foreground">Analyzing content quality and performance</p>
+          <RefreshCw className="w-8 h-8 animate-spin text-green-600 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Quality Analysis...</h2>
+          <p className="text-gray-600">Analyzing content quality and performance</p>
         </div>
       </div>
     );
@@ -330,42 +330,47 @@ export default function QualityPage() {
 
   if (error || !workflowStatus) {
     return (
-      <div className="min-h-screen bg-gradient-card flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 flex items-center justify-center">
         <div className="text-center">
-          <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Quality Analysis Error</h2>
-          <p className="text-muted-foreground mb-4">{error || 'Quality data not found'}</p>
-          <Button onClick={() => window.history.back()}>Go Back</Button>
+          <AlertTriangle className="w-8 h-8 text-red-600 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Quality Analysis Error</h2>
+          <p className="text-gray-600 mb-4">{error || 'Quality data not found'}</p>
+          <Button onClick={() => window.history.back()} className="bg-gradient-to-r from-red-500 to-pink-500 text-white">Go Back</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-card">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+      {/* Header Section with Vibrant Background */}
+      <section className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-3">
               Quality Control Center
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-xl text-white/90">
               Review, approve, and optimize your generated content
             </p>
           </div>
           
-          <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-            <Button variant="outline" className="shadow-professional">
+          <div className="flex items-center space-x-4 mt-6 lg:mt-0">
+            <Button variant="outline" className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 transition-all duration-200">
               <Download className="w-4 h-4 mr-2" />
               Export Report
             </Button>
-            <Button variant="outline" className="shadow-professional">
+            <Button variant="outline" className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 transition-all duration-200">
               <RefreshCw className="w-4 h-4 mr-2" />
               Re-analyze
             </Button>
           </div>
         </div>
+      </div>
+    </section>
+    
+    <div className="container mx-auto px-4 py-12">
 
         {/* Content Info Card */}
         <Card className="shadow-professional mb-8">
@@ -674,5 +679,21 @@ export default function QualityPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QualityPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Quality Analysis...</h2>
+          <p className="text-gray-600">Analyzing content quality and performance</p>
+        </div>
+      </div>
+    }>
+      <QualityPageContent />
+    </Suspense>
   );
 }
