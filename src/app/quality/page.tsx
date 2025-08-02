@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { WorkflowStatus, QualityScores } from "@/types/content";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -331,11 +332,42 @@ function QualityPageContent() {
   if (error || !workflowStatus) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <AlertTriangle className="w-8 h-8 text-red-600 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">Quality Analysis Error</h2>
-          <p className="text-gray-300 mb-4">{error || 'Quality data not found'}</p>
-          <Button onClick={() => window.history.back()} className="bg-gradient-to-r from-red-500 to-pink-500 text-white">Go Back</Button>
+        <div className="text-center max-w-md mx-auto px-4">
+          <AlertTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-6" />
+          <h2 className="text-2xl font-semibold text-white mb-3">Quality Analysis</h2>
+          {error === 'No workflow ID provided' ? (
+            <>
+              <p className="text-gray-300 mb-6">
+                This page shows quality analysis for specific content workflows. You'll need to start or select a workflow first.
+              </p>
+              <div className="space-y-3">
+                <Link href="/create">
+                  <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                    Start New Content Generation
+                  </Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button variant="outline" className="w-full text-white border-white/30 hover:bg-white/10">
+                    View Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-300 mb-6">{error || 'Quality data not found'}</p>
+              <div className="space-y-3">
+                <Button onClick={() => window.history.back()} className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                  Go Back
+                </Button>
+                <Link href="/create">
+                  <Button variant="outline" className="w-full text-white border-white/30 hover:bg-white/10">
+                    Start New Content Generation
+                  </Button>
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
