@@ -146,28 +146,33 @@ export default function CreateContent() {
   const selectedTypeData = contentTypes.find(type => type.id === selectedType);
 
   return (
-    <div className="min-h-screen bg-gradient-card">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="space-y-4">
-            <Badge className="bg-gradient-primary text-primary-foreground">
-              <Sparkles className="w-4 h-4 mr-2" />
-              AI-Powered Content Creation
-            </Badge>
-            <h1 className="text-4xl font-bold text-foreground">
-              Create Professional Marketing Content
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Choose your content type and let our specialized AI agents collaborate 
-              to create compelling, on-brand content in minutes.
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      {/* Header Section with Vibrant Background */}
+      <section className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="space-y-6">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium border border-white/30">
+                <Sparkles className="w-4 h-4 mr-2 text-yellow-300" />
+                AI-Powered Content Creation
+              </div>
+              <h1 className="text-4xl lg:text-5xl font-bold text-white">
+                Create Professional Marketing Content
+              </h1>
+              <p className="text-xl text-white/90 max-w-2xl mx-auto">
+                Choose your content type and let our specialized AI agents collaborate 
+                to create compelling, on-brand content in minutes.
+              </p>
+            </div>
           </div>
         </div>
+      </section>
+      
+      <div className="container mx-auto px-4 py-12">
 
         {/* Content Type Selection */}
         <div className="mb-12">
-          <h2 className="text-2xl font-semibold text-foreground mb-6 text-center">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
             What type of content do you want to create?
           </h2>
           
@@ -175,10 +180,10 @@ export default function CreateContent() {
             {contentTypes.map((type, index) => (
               <Card 
                 key={type.id}
-                className={`cursor-pointer transition-all duration-300 shadow-professional hover:shadow-elevated animate-slide-up ${
+                className={`cursor-pointer transition-all duration-300 shadow-lg hover:shadow-2xl animate-slide-up transform hover:scale-105 ${
                   selectedType === type.id 
-                    ? 'ring-2 ring-primary bg-primary/5' 
-                    : 'hover:bg-accent/5'
+                    ? 'ring-2 ring-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200' 
+                    : 'hover:bg-gradient-to-br hover:from-gray-50 hover:to-blue-50 bg-white'
                 }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => setSelectedType(type.id)}
@@ -187,13 +192,13 @@ export default function CreateContent() {
                   <div className="flex items-center space-x-3">
                     <div className={`p-3 rounded-lg ${
                       selectedType === type.id 
-                        ? 'bg-gradient-primary' 
-                        : 'bg-muted'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600' 
+                        : 'bg-gradient-to-r from-gray-200 to-gray-300'
                     }`}>
                       <type.icon className={`w-6 h-6 ${
                         selectedType === type.id 
-                          ? 'text-primary-foreground' 
-                          : 'text-muted-foreground'
+                          ? 'text-white' 
+                          : 'text-gray-600'
                       }`} />
                     </div>
                     <div>
@@ -302,7 +307,7 @@ export default function CreateContent() {
             </Card>
 
             <Button 
-              className="bg-gradient-primary shadow-professional text-lg px-12 py-4 h-auto"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl text-lg px-12 py-4 h-auto transform hover:scale-105 transition-all duration-200"
               onClick={handleCreateContent}
               disabled={isLoading}
             >

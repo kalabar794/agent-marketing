@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +35,7 @@ const agentMapping: Record<string, { name: string; icon: string; role: string; d
   'performance-analyst': { name: 'Performance Analyst', icon: '📊', role: 'Analytics & Tracking', description: 'Performance analysis' }
 };
 
-export default function WorkflowPage() {
+function WorkflowPageContent() {
   const searchParams = useSearchParams();
   const workflowId = searchParams.get('id');
   
@@ -184,7 +184,7 @@ export default function WorkflowPage() {
               </Button>
               
               <Link href={`/quality?id=${workflowId}`}>
-                <Button className="bg-gradient-primary shadow-professional">
+                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-2xl">
                   <Eye className="w-4 h-4 mr-2" />
                   Preview Result
                 </Button>
@@ -409,7 +409,7 @@ export default function WorkflowPage() {
                   Force Complete Stage
                 </Button>
                 <Link href={`/quality?id=${workflowId}`} className="block">
-                  <Button className="w-full justify-start bg-gradient-primary">
+                  <Button className="w-full justify-start bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                     <ArrowRight className="w-4 h-4 mr-2" />
                     Go to Quality Control
                   </Button>
@@ -420,5 +420,21 @@ export default function WorkflowPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function WorkflowPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Workflow...</h2>
+          <p className="text-gray-600">Preparing your content generation workspace</p>
+        </div>
+      </div>
+    }>
+      <WorkflowPageContent />
+    </Suspense>
   );
 }
