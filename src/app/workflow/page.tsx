@@ -137,13 +137,42 @@ function WorkflowPageContent() {
   if (error || !workflowStatus) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-8 h-8 text-destructive mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Workflow Error</h2>
-          <p className="text-muted-foreground mb-4">{error || 'Workflow not found'}</p>
-          <Link href="/create">
-            <Button>Start New Content Generation</Button>
-          </Link>
+        <div className="text-center max-w-md mx-auto px-4">
+          <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-6" />
+          <h2 className="text-2xl font-semibold text-white mb-3">Agent Workflow</h2>
+          {error === 'No workflow ID provided' ? (
+            <>
+              <p className="text-gray-300 mb-6">
+                This page shows real-time progress of content generation workflows. You'll need to start a workflow first.
+              </p>
+              <div className="space-y-3">
+                <Link href="/create">
+                  <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white">
+                    Start New Content Generation
+                  </Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button variant="outline" className="w-full text-white border-white/30 hover:bg-white/10">
+                    View Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-300 mb-6">{error || 'Workflow not found'}</p>
+              <div className="space-y-3">
+                <Button onClick={() => window.history.back()} className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                  Go Back
+                </Button>
+                <Link href="/create">
+                  <Button variant="outline" className="w-full text-white border-white/30 hover:bg-white/10">
+                    Start New Content Generation
+                  </Button>
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
