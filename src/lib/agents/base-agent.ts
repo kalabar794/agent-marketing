@@ -1,4 +1,5 @@
 import { ContentGenerationRequest } from '@/types/content';
+import { config } from '@/lib/config';
 
 export abstract class BaseAgent {
   protected agentName: string;
@@ -17,7 +18,7 @@ export abstract class BaseAgent {
     temperature?: number; 
   }): Promise<string> {
     const {
-      model = 'claude-3-sonnet-20240229',
+      model = 'claude-3-5-sonnet-20241022',
       maxTokens = 4000,
       temperature = 0.7
     } = options || {};
@@ -45,7 +46,7 @@ export abstract class BaseAgent {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+            'x-api-key': config.anthropicApiKey,
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify(requestBody),

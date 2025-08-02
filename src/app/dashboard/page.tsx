@@ -208,43 +208,49 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-card">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Marketing Dashboard
-            </h1>
-            <p className="text-muted-foreground">
-              Monitor your AI agents and content generation pipeline
-            </p>
+    <div className="min-h-screen bg-slate-900">
+      {/* Header Section with Vibrant Background */}
+      <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 py-16">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/10 to-pink-600/20 pointer-events-none"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-3">
+                Marketing Dashboard
+              </h1>
+              <p className="text-xl text-white/90">
+                Monitor your AI agents and content generation pipeline
+              </p>
+            </div>
+            <Link href="/create" className="mt-6 md:mt-0">
+              <Button className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 transition-all duration-200">
+                <Plus className="w-4 h-4 mr-2" />
+                New Project
+              </Button>
+            </Link>
           </div>
-          <Link href="/create">
-            <Button className="mt-4 md:mt-0 bg-gradient-primary shadow-professional">
-              <Plus className="w-4 h-4 mr-2" />
-              New Project
-            </Button>
-          </Link>
         </div>
+      </section>
+      
+      <div className="container mx-auto px-4 py-12">
 
         {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {metrics.map((metric, index) => (
             <Card 
               key={metric.title} 
-              className="shadow-professional hover:shadow-elevated transition-all duration-300 animate-slide-up"
+              className="bg-slate-800 border-slate-700 shadow-professional hover:shadow-elevated transition-all duration-300 animate-slide-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{metric.title}</CardTitle>
+                <CardTitle className="text-sm font-medium text-white">{metric.title}</CardTitle>
                 <metric.icon className={`h-4 w-4 ${metric.color}`} />
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${metric.color} mb-1`}>
                   {metric.value}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-300">
                   {metric.change}
                 </p>
               </CardContent>
@@ -254,13 +260,13 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Active Agents */}
-          <Card className="shadow-professional">
+          <Card className="bg-slate-800 border-slate-700 shadow-professional">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-primary" />
-                <span>Active AI Agents</span>
+                <Users className="w-5 h-5 text-blue-400" />
+                <span className="text-white">Active AI Agents</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-300">
                 Real-time status of your AI marketing team
               </CardDescription>
             </CardHeader>
@@ -282,13 +288,13 @@ export default function Dashboard() {
           </Card>
 
           {/* Current Pipeline */}
-          <Card className="shadow-professional">
+          <Card className="bg-slate-800 border-slate-700 shadow-professional">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-accent" />
-                <span>Content Pipeline</span>
+                <TrendingUp className="w-5 h-5 text-purple-400" />
+                <span className="text-white">Content Pipeline</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-300">
                 Active content creation workflow
               </CardDescription>
             </CardHeader>
@@ -303,13 +309,13 @@ export default function Dashboard() {
 
         {/* Quality Metrics */}
         <div className="mb-8">
-          <Card className="shadow-professional">
+          <Card className="bg-slate-800 border-slate-700 shadow-professional">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <span>Quality Metrics</span>
+                <BarChart3 className="w-5 h-5 text-blue-400" />
+                <span className="text-white">Quality Metrics</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-300">
                 Real-time quality scores and performance metrics
               </CardDescription>
             </CardHeader>
@@ -320,13 +326,13 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Projects */}
-        <Card className="shadow-professional">
+        <Card className="bg-slate-800 border-slate-700 shadow-professional">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <FileText className="w-5 h-5 text-primary" />
-              <span>Recent Projects</span>
+              <FileText className="w-5 h-5 text-blue-400" />
+              <span className="text-white">Recent Projects</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-300">
               Your latest content generation projects and their status
             </CardDescription>
           </CardHeader>
@@ -335,16 +341,16 @@ export default function Dashboard() {
               {recentProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-4 border border-slate-600 rounded-lg hover:bg-slate-700/50 transition-colors cursor-pointer"
                 >
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h4 className="font-medium text-foreground">{project.title}</h4>
+                      <h4 className="font-medium text-white">{project.title}</h4>
                       <span className={`text-xs px-2 py-1 rounded-full ${getStatusBg(project.status)} ${getStatusColor(project.status)}`}>
                         {project.status}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                    <div className="flex items-center space-x-4 text-sm text-gray-300">
                       <span>{project.type}</span>
                       <span>•</span>
                       <span>{project.agents} agents involved</span>
@@ -353,11 +359,11 @@ export default function Dashboard() {
                   <div className="text-right">
                     <div className="flex items-center space-x-2 mb-1">
                       {project.completion === 100 && <CheckCircle2 className="w-4 h-4 text-success" />}
-                      <span className="text-sm font-medium text-foreground">
+                      <span className="text-sm font-medium text-white">
                         {project.completion}%
                       </span>
                     </div>
-                    <div className="w-24 h-2 bg-muted rounded-full">
+                    <div className="w-24 h-2 bg-slate-600 rounded-full">
                       <div
                         className="h-full bg-gradient-primary rounded-full transition-all duration-300"
                         style={{ width: `${project.completion}%` }}

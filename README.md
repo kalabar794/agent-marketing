@@ -1,4 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Agentic Marketing Content Generator
+
+A sophisticated agentic marketing content generation system that leverages specialized Claude agents to produce high-quality, multi-platform marketing content for marketing professionals.
+
+## Prerequisites
+
+- Node.js 18+ 
+- An Anthropic Claude API key ([Get one here](https://console.anthropic.com/))
+
+## Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone [repository-url]
+   cd agentic-marketing-generator
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Edit `.env.local` and add your Anthropic API key:
+   ```env
+   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   ```
 
 ## Getting Started
 

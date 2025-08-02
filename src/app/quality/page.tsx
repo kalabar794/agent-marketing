@@ -318,11 +318,11 @@ function QualityPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin text-green-600 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Quality Analysis...</h2>
-          <p className="text-gray-600">Analyzing content quality and performance</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Loading Quality Analysis...</h2>
+          <p className="text-gray-300">Analyzing content quality and performance</p>
         </div>
       </div>
     );
@@ -330,11 +330,11 @@ function QualityPageContent() {
 
   if (error || !workflowStatus) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="w-8 h-8 text-red-600 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Quality Analysis Error</h2>
-          <p className="text-gray-600 mb-4">{error || 'Quality data not found'}</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Quality Analysis Error</h2>
+          <p className="text-gray-300 mb-4">{error || 'Quality data not found'}</p>
           <Button onClick={() => window.history.back()} className="bg-gradient-to-r from-red-500 to-pink-500 text-white">Go Back</Button>
         </div>
       </div>
@@ -342,10 +342,11 @@ function QualityPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+    <div className="min-h-screen bg-slate-900">
       {/* Header Section with Vibrant Background */}
-      <section className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 py-16">
-        <div className="container mx-auto px-4">
+      <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 py-16">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-teal-500/20 pointer-events-none"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
             <h1 className="text-4xl lg:text-5xl font-bold text-white mb-3">
@@ -685,11 +686,11 @@ function QualityPageContent() {
 export default function QualityPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Quality Analysis...</h2>
-          <p className="text-gray-600">Analyzing content quality and performance</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Loading Quality Analysis...</h2>
+          <p className="text-gray-300">Analyzing content quality and performance</p>
         </div>
       </div>
     }>
