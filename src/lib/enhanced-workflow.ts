@@ -158,7 +158,7 @@ export class EnhancedContentWorkflow {
 
       // Phase 4: Generate Final Content
       console.log('📝 Phase 4: Final Content Generation');
-      await this.generateFinalContent(agentResults);
+      await this.storage.saveFinalContent(this.id, finalContent);
 
       // Phase 5: Final Quality Assessment
       console.log('✅ Phase 5: Final Quality Assessment');
@@ -249,31 +249,6 @@ export class EnhancedContentWorkflow {
     return content;
   }
 
-  private async generateFinalContent(agentResults: Map<string, any>): Promise<void> {
-    const completedOutputs = Object.fromEntries(agentResults);
-
-    // Use enhanced content generation logic
-    const content: GeneratedContent = {
-      id: `enhanced-content-${this.id}`,
-      title: this.extractTitle(completedOutputs),
-      content: this.extractMainContent(completedOutputs),
-      summary: this.extractSummary(completedOutputs),
-      seoKeywords: this.extractSEOKeywords(completedOutputs),
-      readabilityScore: this.calculateReadabilityScore(completedOutputs),
-      platforms: this.generatePlatformContent(completedOutputs),
-      metadata: {
-        contentType: this.request.contentType,
-        generationMethod: 'enhanced-workflow',
-        totalAgents: agentResults.size,
-        optimizationCycles: this.options.maxOptimizationCycles || 0,
-        executionTime: Date.now() - this.executionStartTime.getTime(),
-        qualityMode: this.options.priorityMode
-      }
-    };
-
-    this.status.content = content;
-    await this.storage.saveFinalContent(this.id, content);
-  }
 
   private async runFinalQualityControl(agentResults: Map<string, any>): Promise<void> {
     if (!this.status.content) return;
@@ -706,5 +681,67 @@ The integration of ${this.request.topic} represents a significant opportunity fo
     // Update overall progress
     const totalProgress = this.status.agents.reduce((sum, agent) => sum + agent.progress, 0);
     this.status.progress = Math.round(totalProgress / this.status.agents.length);
+  }
+
+  // Helper methods for content assembly
+  private extractTitle(outputs: any): string {
+    if (outputs['content-writer']?.content?.title) {
+      return outputs['content-writer'].content.title;
+    }
+    if (outputs['content-strategist']?.outline?.title) {
+      return outputs['content-strategist'].outline.title;
+    }
+    return `${this.request.topic}: A Comprehensive Guide`;
+  }
+
+  private extractMainContent(outputs: any): string {
+    if (outputs['content-writer']?.content?.mainContent) {
+      const sections = outputs['content-writer'].content.mainContent;
+      return sections.map((section: any) => {
+        let content = `## ${section.heading}\n\n`;
+        if (section.paragraphs) {
+          content += section.paragraphs.join('\n\n') + '\n\n';
+        }
+        if (section.bulletPoints && section.bulletPoints.length > 0) {
+          content += section.bulletPoints.map((point: string) => `- ${point}`).join('\n') + '\n\n';
+        }
+        return content;
+      }).join('');
+    }
+    return `# ${this.request.topic}\n\nComprehensive content about ${this.request.topic} for ${this.request.audience}.`;
+  }
+
+  private extractSummary(outputs: any): string {
+    if (outputs['content-strategist']?.strategy?.valueProposition) {
+      return outputs['content-strategist'].strategy.valueProposition;
+    }
+    return `Complete guide to ${this.request.topic} for ${this.request.audience}`;
+  }
+
+  private extractSEOKeywords(outputs: any): string[] {
+    if (outputs['ai-seo-optimizer']?.keywordStrategy?.primaryKeywords) {
+      return outputs['ai-seo-optimizer'].keywordStrategy.primaryKeywords.map((k: any) => k.keyword || k);
+    }
+    return [this.request.topic.toLowerCase(), 'best practices', 'guide'];
+  }
+
+  private calculateReadabilityScore(outputs: any): number {
+    if (outputs['content-editor']?.readabilityScore) {
+      return outputs['content-editor'].readabilityScore;
+    }
+    return 78; // Default readable score
+  }
+
+  private generatePlatformContent(outputs: any): any[] {
+    if (outputs['social-media-specialist']?.platforms) {
+      return outputs['social-media-specialist'].platforms;
+    }
+    if (this.request.contentType === 'social') {
+      return [
+        { platform: 'LinkedIn', content: `Professional insights on ${this.request.topic}` },
+        { platform: 'Twitter', content: `Quick tips about ${this.request.topic}` }
+      ];
+    }
+    return [];
   }
 }
