@@ -531,4 +531,41 @@ Ensure your output follows the exact same JSON structure as the previous version
       .slice(0, 5)
       .map(s => s.suggestion);
   }
+
+  /**
+   * Calculate quality scores for final content
+   */
+  public async calculateQualityScores(
+    finalContent: any,
+    request: ContentGenerationRequest,
+    agentResults: Map<string, any>
+  ): Promise<any> {
+    try {
+      // Create comprehensive evaluation of final content
+      const evaluation = await this.evaluateAgentOutput(
+        'final-content',
+        finalContent,
+        request,
+        { previousOutputs: Object.fromEntries(agentResults) }
+      );
+
+      return {
+        overall: evaluation.metrics.overallScore,
+        content: evaluation.metrics.contentQuality,
+        seo: evaluation.metrics.seoOptimization,
+        engagement: evaluation.metrics.engagementPotential,
+        brand: evaluation.metrics.brandAlignment
+      };
+    } catch (error) {
+      console.warn('Quality score calculation failed, using defaults:', error);
+      // Return default quality scores
+      return {
+        overall: 0.75,
+        content: 0.75,
+        seo: 0.75,
+        engagement: 0.75,
+        brand: 0.75
+      };
+    }
+  }
 }

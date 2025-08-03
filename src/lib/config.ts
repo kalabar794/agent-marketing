@@ -16,35 +16,21 @@ class ConfigError extends Error {
 }
 
 function validateApiKey(apiKey: string | undefined): string {
-  // Allow missing API key in production - will use demo mode
+  // Allow missing API key - will use demo mode
   if (!apiKey) {
-    if (process.env.NODE_ENV === 'production') {
-      console.log('🎭 ANTHROPIC_API_KEY not found - will use demo mode in production');
-      return '';
-    }
-    throw new ConfigError(
-      'ANTHROPIC_API_KEY is required. Please add your Claude API key to .env.local'
-    );
+    console.log('🎭 ANTHROPIC_API_KEY not found - will use demo mode');
+    return '';
   }
 
-  if (!apiKey.startsWith('sk-ant-api03-')) {
-    if (process.env.NODE_ENV === 'production') {
-      console.log('🎭 Invalid API key format - will use demo mode in production');
-      return '';
-    }
-    throw new ConfigError(
-      'Invalid ANTHROPIC_API_KEY format. Expected format: sk-ant-api03-...'
-    );
+  // Relax validation - accept various Anthropic key formats
+  if (!apiKey.startsWith('sk-ant-')) {
+    console.log('🎭 Unexpected API key format - will attempt to use but may fail');
+    // Don't throw error, let API call fail naturally if invalid
   }
 
-  if (apiKey.length < 50) {
-    if (process.env.NODE_ENV === 'production') {
-      console.log('🎭 Incomplete API key - will use demo mode in production');
-      return '';
-    }
-    throw new ConfigError(
-      'ANTHROPIC_API_KEY appears to be incomplete. Please check your API key.'
-    );
+  if (apiKey.length < 30) {
+    console.log('🎭 API key appears short - will attempt to use but may fail');
+    // Don't throw error, let API call fail naturally if invalid
   }
 
   return apiKey;

@@ -31,13 +31,13 @@ export abstract class BaseAgent {
 
     const {
       model = 'claude-3-5-sonnet-20241022', // Use actual Claude 3.5 Sonnet model
-      maxTokens = this.maxOutputTokens,
+      maxTokens = Math.min(this.maxOutputTokens, 800), // Limit to 800 tokens for focused content
       temperature = 0.4, // Lower temperature for more consistent marketing copy
       useTools = false,
       systemPrompt
     } = options || {};
 
-    // Initialize Anthropic client
+    // Initialize Anthropic client with proper error handling
     const anthropic = new Anthropic({
       apiKey: config.anthropicApiKey,
     });
@@ -60,6 +60,7 @@ export abstract class BaseAgent {
           model,
           max_tokens: maxTokens,
           temperature,
+          top_p: 0.9, // Add top_p for better sampling
           messages
         };
 
@@ -75,6 +76,11 @@ export abstract class BaseAgent {
 
         const response = await anthropic.messages.create(requestOptions);
         
+        // Check stop reason
+        if (response.stop_reason && response.stop_reason !== 'end_turn' && response.stop_reason !== 'tool_use') {
+          throw new Error(`Claude stop_reason=${response.stop_reason}`);
+        }
+        
         // Extract text from response
         const textContent = response.content.find(content => content.type === 'text');
         if (textContent && 'text' in textContent) {
@@ -87,7 +93,13 @@ export abstract class BaseAgent {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         
-        console.warn(`${this.agentName} LLM call attempt ${attempt} failed:`, lastError.message);
+        console.error(`[${this.agentName}] LLM call attempt ${attempt} failed:`, {
+          model,
+          maxTokens,
+          temperature,
+          agentName: this.agentName,
+          error: lastError.message
+        });
         
         if (attempt < this.maxRetries) {
           // Exponential backoff
