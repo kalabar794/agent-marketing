@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Working Animations - WORKING VERSION</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .demo-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .animations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .animation-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        
+        .animation-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .animation-demo {
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* MINIMAL ANIMATION */
+        .dots-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #007bff;
+            animation: dotPulse 1.4s ease-in-out infinite;
+        }
+        
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        .processing-text {
+            margin-left: 15px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        @keyframes dotPulse {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+                background: #007bff;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+                background: #0056b3;
+            }
+        }
+        
+        /* CREATIVE ANIMATION */
+        .ai-workspace {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .ai-brain {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            animation: brainRotate 4s linear infinite, brainPulse 2s ease-in-out infinite alternate;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+            z-index: 10;
+        }
+        
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 2px dashed rgba(78, 205, 196, 0.3);
+            border-radius: 50%;
+            animation: orbitRotate 3s linear infinite reverse;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: particlePulse 1.5s ease-in-out infinite;
+        }
+        
+        .data-stream {
+            position: absolute;
+            width: 3px;
+            background: linear-gradient(to bottom, transparent, #ff6b6b, transparent);
+            animation: streamFlow 2s ease-in-out infinite;
+            border-radius: 2px;
+        }
+        
+        .stream-1 {
+            height: 40px;
+            left: 15px;
+            top: 40px;
+            animation-delay: 0s;
+        }
+        
+        .stream-2 {
+            height: 50px;
+            left: 55px;
+            top: 35px;
+            animation-delay: 0.7s;
+        }
+        
+        .stream-3 {
+            height: 45px;
+            left: 95px;
+            top: 37px;
+            animation-delay: 1.4s;
+        }
+        
+        @keyframes brainRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        @keyframes brainPulse {
+            from { 
+                box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to { 
+                box-shadow: 0 0 30px rgba(78, 205, 196, 0.8);
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+        
+        @keyframes orbitRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        @keyframes particlePulse {
+            0%, 100% { 
+                transform: translateX(-50%) scale(0.7);
+                opacity: 0.6;
+                background: #4ecdc4;
+            }
+            50% { 
+                transform: translateX(-50%) scale(1.3);
+                opacity: 1;
+                background: #ff6b6b;
+            }
+        }
+        
+        @keyframes streamFlow {
+            0% { 
+                opacity: 0;
+                transform: scaleY(0);
+            }
+            50% { 
+                opacity: 1;
+                transform: scaleY(1);
+            }
+            100% { 
+                opacity: 0;
+                transform: scaleY(0);
+            }
+        }
+        
+        /* STATUS TEXT */
+        .status-text {
+            color: #666;
+            font-size: 14px;
+            margin-top: 15px;
+            animation: textFade 3s ease-in-out infinite;
+        }
+        
+        @keyframes textFade {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .feature-list {
+            text-align: left;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .feature-list li {
+            margin-bottom: 5px;
+        }
+        
+        .code-section {
+            background: #f1f3f4;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .code-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8e6cf 0%, #dcedc1 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            color: #2d5016;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="title">🤖 AI Agent Working Animations</h1>
+        <p class="subtitle">Original and visually appealing animations that symbolize AI agents working on content</p>
+        
+        <div class="animations-grid">
+            <!-- MINIMAL ANIMATION -->
+            <div class="animation-card">
+                <h2 class="animation-title">Minimal Loading</h2>
+                <div class="animation-demo">
+                    <div class="dots-container">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <span class="processing-text">Processing...</span>
+                    </div>
+                </div>
+                <ul class="feature-list">
+                    <li>• Perfect for inline states</li>
+                    <li>• Compact UI spaces</li>
+                    <li>• Quick user feedback</li>
+                    <li>• Lightweight and fast</li>
+                </ul>
+            </div>
+            
+            <!-- CREATIVE ANIMATION -->
+            <div class="animation-card">
+                <h2 class="animation-title">AI Brain at Work</h2>
+                <div class="animation-demo">
+                    <div class="ai-workspace">
+                        <div class="orbit">
+                            <div class="particle"></div>
+                        </div>
+                        <div class="ai-brain">AI</div>
+                        <div class="data-stream stream-1"></div>
+                        <div class="data-stream stream-2"></div>
+                        <div class="data-stream stream-3"></div>
+                    </div>
+                </div>
+                <div class="status-text">Analyzing content patterns...</div>
+                <ul class="feature-list">
+                    <li>• Landing pages</li>
+                    <li>• AI showcases</li>
+                    <li>• Brand experiences</li>
+                    <li>• Premium feel</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="code-section">
+            <div class="code-title">🔧 Usage in Your React App:</div>
+            <div class="code-block">
+import AgentWorkingAnimation from '@/components/AgentWorkingAnimation'
+
+// Minimal version
+&lt;AgentWorkingAnimation 
+  type="minimal" 
+  message="Processing your request..." 
+/&gt;
+
+// Creative version
+&lt;AgentWorkingAnimation 
+  type="creative" 
+  size="lg"
+  message="AI agents are collaborating on your content"
+/&gt;</div>
+        </div>
+        
+        <div class="highlight">
+            ✨ The animations are now built and ready to use in your project!<br>
+            Find them at: <code>src/components/AgentWorkingAnimation.tsx</code>
+        </div>
+    </div>
+</body>
+</html>
