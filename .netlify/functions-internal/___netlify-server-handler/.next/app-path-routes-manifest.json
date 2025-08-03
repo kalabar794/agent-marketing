@@ -7,6 +7,6 @@
   "/demo/page": "/demo",
   "/page": "/",
   "/workflow/page": "/workflow",
-  "/create/page": "/create",
-  "/dashboard/page": "/dashboard"
+  "/dashboard/page": "/dashboard",
+  "/create/page": "/create"
 }

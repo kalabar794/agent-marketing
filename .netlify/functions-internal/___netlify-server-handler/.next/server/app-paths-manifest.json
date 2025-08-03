@@ -7,6 +7,6 @@
   "/demo/page": "app/demo/page.js",
   "/page": "app/page.js",
   "/workflow/page": "app/workflow/page.js",
-  "/create/page": "app/create/page.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/dashboard/page": "app/dashboard/page.js",
+  "/create/page": "app/create/page.js"
 }
