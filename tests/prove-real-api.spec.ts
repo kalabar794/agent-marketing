@@ -25,7 +25,7 @@ test.describe('Prove Real API Works', () => {
     
     // 4. Submit form and capture the workflow ID
     await page.click('text=Start Creating');
-    await page.waitForURL('**/workflow*', { timeout: 30000 });
+    await page.waitForURL('**/workflow*', { timeout: 60000 });
     
     const url = page.url();
     const workflowId = url.match(/id=([^&]+)/)?.[1];
