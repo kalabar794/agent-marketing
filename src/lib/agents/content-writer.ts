@@ -91,9 +91,9 @@ export class ContentWriter extends BaseAgent {
     
     try {
       const response = await this.callLLM(prompt, {
-        maxTokens: 2000,
+        maxTokens: 4000, // Ensure sufficient tokens for comprehensive blog content
         temperature: 0.6,
-        systemPrompt: 'You are a professional content writer who creates engaging, valuable content for business audiences. Always respond with valid JSON in the exact format requested.'
+        systemPrompt: 'You are a professional content writer who creates engaging, valuable content for business audiences. Write comprehensive, detailed content of 1500-2000+ words when appropriate. Always respond with valid JSON in the exact format requested.'
       });
       
       const result = this.parseResponse(response);
