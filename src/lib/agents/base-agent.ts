@@ -5,9 +5,9 @@ import Anthropic from '@anthropic-ai/sdk';
 export abstract class BaseAgent {
   protected agentName: string;
   protected maxRetries: number = 3;
-  protected timeout: number = 120000; // 2 minutes timeout (Background functions have 15 minutes total)
+  protected timeout: number = 180000; // 3 minutes timeout for comprehensive content generation
   protected usePromptCaching: boolean = true;
-  protected maxOutputTokens: number = 4000; // Appropriate for comprehensive blog content (2000+ words)
+  protected maxOutputTokens: number = 8192; // Industry standard for comprehensive marketing content (1500-2000 words)
 
   constructor(agentName: string) {
     this.agentName = agentName;
@@ -32,7 +32,7 @@ export abstract class BaseAgent {
     const {
       model = 'claude-sonnet-4-20250514', // Use Claude Sonnet 4 (latest)
       maxTokens = this.maxOutputTokens, // Use full token allowance for comprehensive content
-      temperature = 0.4, // Lower temperature for more consistent marketing copy
+      temperature = 0.3, // Optimized for consistent, high-quality marketing copy
       useTools = false,
       systemPrompt
     } = options || {};
@@ -76,6 +76,13 @@ export abstract class BaseAgent {
 
         const response = await anthropic.messages.create(requestOptions);
         
+        // Log token usage for cost monitoring (API best practice)
+        if (response.usage) {
+          console.log(`[${this.agentName}] Token usage - Input: ${response.usage.input_tokens}, Output: ${response.usage.output_tokens}`);
+          const estimatedCost = (response.usage.input_tokens * 0.003 + response.usage.output_tokens * 0.015) / 1000; // Claude Sonnet 4 pricing
+          console.log(`[${this.agentName}] Estimated cost: $${estimatedCost.toFixed(4)}`);
+        }
+        
         // Check stop reason
         if (response.stop_reason && response.stop_reason !== 'end_turn' && response.stop_reason !== 'tool_use') {
           throw new Error(`Claude stop_reason=${response.stop_reason}`);
@@ -102,9 +109,12 @@ export abstract class BaseAgent {
         });
         
         if (attempt < this.maxRetries) {
-          // Exponential backoff
-          const delay = Math.pow(2, attempt) * 1000;
-          console.log(`[${this.agentName}] Retrying in ${delay}ms...`);
+          // Exponential backoff with rate limiting best practices
+          const baseDelay = Math.pow(2, attempt) * 1000;
+          // Add jitter to avoid thundering herd (API best practice)
+          const jitter = Math.random() * 1000;
+          const delay = baseDelay + jitter;
+          console.log(`[${this.agentName}] Retrying in ${delay.toFixed(0)}ms... (attempt ${attempt}/${this.maxRetries})`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }

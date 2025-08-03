@@ -91,9 +91,20 @@ export class ContentWriter extends BaseAgent {
     
     try {
       const response = await this.callLLM(prompt, {
-        maxTokens: 4000, // Ensure sufficient tokens for comprehensive blog content
-        temperature: 0.6,
-        systemPrompt: 'You are a professional content writer who creates engaging, valuable content for business audiences. Write comprehensive, detailed content of 1500-2000+ words when appropriate. Always respond with valid JSON in the exact format requested.'
+        maxTokens: 8192, // Industry standard for comprehensive marketing content (1500-2000 words)
+        temperature: 0.3, // Optimized for consistent, high-quality marketing copy
+        systemPrompt: `You are a professional marketing content writer specializing in comprehensive, long-form content.
+        
+CREATE COMPREHENSIVE CONTENT:
+        - Write detailed, valuable content of 1500-2000+ words when creating blog posts
+        - Include actionable insights, examples, and practical advice
+        - Structure content with clear sections and smooth transitions
+        - Focus on providing genuine value to the target audience
+        
+FORMAT REQUIREMENTS:
+        - Always respond with valid JSON in the exact format requested
+        - Ensure content is well-structured and professionally written
+        - Include compelling headlines and engaging introductions`
       });
       
       const result = this.parseResponse(response);
@@ -381,13 +392,28 @@ export class ContentWriter extends BaseAgent {
 - Tone: ${request.tone || 'Professional and engaging'}
 ${context}
 
-**Instructions:**
-Write engaging, well-structured content that provides real value to the reader. Include:
-- Compelling title and introduction
-- 3-4 main content sections with clear headings
-- Actionable insights and practical advice
-- Strong conclusion with next steps
-- Compelling call-to-action
+**CONTENT REQUIREMENTS:**
+Create comprehensive, valuable content that exceeds industry standards:
+
+**LENGTH & DEPTH:**
+- Target 1500-2000+ words for blog posts (industry best practice)
+- Provide in-depth analysis and actionable insights
+- Include specific examples, case studies, and practical advice
+- Cover the topic comprehensively to establish authority
+
+**STRUCTURE:**
+- Compelling, SEO-optimized title
+- Engaging introduction with clear value proposition
+- 5-7 main content sections with descriptive headings
+- Detailed explanations with supporting examples
+- Strong conclusion summarizing key takeaways
+- Compelling, specific call-to-action
+
+**QUALITY STANDARDS:**
+- Industry-leading content that ranks on Google's first page
+- Original insights and perspectives
+- Professional, authoritative tone
+- Clear, engaging writing style
 
 Respond with a simple JSON object:
 {
