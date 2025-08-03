@@ -1,5 +1,13 @@
 [build]
   command = "npm run build"
+  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[functions]
+  node_bundler = "esbuild"
+  
+# Enable longer timeouts for AI content generation
+[functions."api/content/generate"]
+  timeout = 900  # 15 minutes for background processing
