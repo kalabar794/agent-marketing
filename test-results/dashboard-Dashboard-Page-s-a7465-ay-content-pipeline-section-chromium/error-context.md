@@ -1,0 +1,96 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - text: AgenticMarketing
+  - link "Home":
+    - /url: /
+  - link "Dashboard":
+    - /url: /dashboard/
+  - link "Create Content":
+    - /url: /create/
+  - link "Agent Workflow":
+    - /url: /workflow/
+- text: Real-Time Dashboard
+- heading "Marketing Dashboard" [level=1]
+- paragraph: Monitor your AI agents and content generation pipeline
+- link "New Project":
+  - /url: /create/
+  - button "New Project"
+- heading "Active Projects" [level=3]
+- text: "8"
+- paragraph: +2 this week
+- heading "Agents Working" [level=3]
+- text: "4"
+- paragraph: Real-time collaboration
+- heading "Success Rate" [level=3]
+- text: 96%
+- paragraph: +4% from last month
+- heading "Avg. Completion Time" [level=3]
+- text: 12min
+- paragraph: "-8min improvement"
+- heading "Active AI Agents" [level=3]
+- paragraph: Real-time status of your AI marketing team
+- text: 📋
+- heading "Content Strategist" [level=3]
+- paragraph: Strategy & Planning
+- text: Completed 🎯
+- heading "SEO Optimizer" [level=3]
+- paragraph: Search Optimization
+- text: Completed ✍️
+- heading "Content Writer" [level=3]
+- paragraph: Content Creation
+- text: Working
+- paragraph: 73%
+- text: 🎨
+- heading "Visual Designer" [level=3]
+- paragraph: Visual Content
+- text: Thinking 🛡️
+- heading "Brand Guardian" [level=3]
+- paragraph: Brand Compliance
+- text: Idle ✅
+- heading "Quality Controller" [level=3]
+- paragraph: Quality Assurance
+- text: Idle
+- heading "Content Pipeline" [level=3]
+- paragraph: Active content creation workflow
+- text: 📋
+- heading "Content Strategy" [level=3]
+- paragraph: Market research and content planning completed
+- text: Completed 🎯
+- heading "SEO Optimization" [level=3]
+- paragraph: Keyword research and optimization strategy defined
+- text: Completed ✍️
+- heading "Content Creation" [level=3]
+- text: 2 minutes
+- paragraph: Writing engaging, brand-aligned content
+- text: Progress 73%
+- progressbar
+- text: 🎨
+- heading "Visual Design" [level=3]
+- paragraph: Creating visual assets and graphics
+- text: 🛡️
+- heading "Quality Review" [level=3]
+- paragraph: Brand compliance and final quality checks
+- heading "Quality Metrics" [level=3]
+- paragraph: Real-time quality scores and performance metrics
+- text: "Content Quality Target: 90% 94% +4"
+- progressbar
+- text: "Brand Alignment Target: 85% 88% +3"
+- progressbar
+- text: "Engagement Score Target: 80% 92% +12"
+- progressbar
+- text: "Generation Speed Target: 95% 96% +1"
+- progressbar
+- heading "Recent Projects" [level=3]
+- paragraph: Your latest content generation projects and their status
+- heading "AI Marketing Trends Blog Post" [level=4]
+- text: In Progress Blog Post • 3 agents involved 73%
+- heading "Product Launch Social Campaign" [level=4]
+- text: Review Social Media • 6 agents involved 90%
+- heading "Customer Success Stories" [level=4]
+- text: Completed Case Study • 4 agents involved 100%
+- heading "Email Newsletter Template" [level=4]
+- text: Planning Email • 2 agents involved 25%
+- alert
+```
