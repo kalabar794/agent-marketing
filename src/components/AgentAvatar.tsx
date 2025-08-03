@@ -78,7 +78,7 @@ export function AgentAvatar({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
       className={cn(
-        'relative flex flex-col items-center p-4 rounded-lg shadow-agent bg-card border border-border',
+        'relative flex flex-col items-center p-4 rounded-lg shadow-agent bg-gray-800 border border-gray-600',
         'transition-all duration-300',
         className
       )}
@@ -112,10 +112,10 @@ export function AgentAvatar({
 
       {/* Agent Info */}
       <div className="text-center space-y-1 mb-3">
-        <h3 className="font-semibold text-card-foreground text-sm">
+        <h3 className="font-semibold text-white text-sm">
           {name}
         </h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-gray-300">
           {role}
         </p>
       </div>
@@ -132,15 +132,15 @@ export function AgentAvatar({
       {/* Progress Bar (if provided) */}
       {typeof progress === 'number' && (
         <div className="w-full mt-3">
-          <div className="h-1 bg-muted rounded-full overflow-hidden">
+          <div className="h-1 bg-gray-600 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-primary rounded-full"
+              className="h-full bg-blue-500 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             />
           </div>
-          <p className="text-xs text-muted-foreground text-center mt-1">
+          <p className="text-xs text-gray-300 text-center mt-1">
             {progress}%
           </p>
         </div>

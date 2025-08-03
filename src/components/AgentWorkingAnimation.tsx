@@ -3,32 +3,107 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ContentLoader from 'react-content-loader'
+import { useInView } from 'react-intersection-observer'
+import { UseQueryResult, UseMutationResult } from '@tanstack/react-query'
+
+// Backend integration types
+type QueryState = {
+  isPending?: boolean
+  isError?: boolean
+  isFetching?: boolean
+  error?: Error | null
+}
+
+type MutationState = {
+  isPending?: boolean
+  isError?: boolean
+  error?: Error | null
+}
 
 interface AgentWorkingAnimationProps {
   isWorking?: boolean
   type?: 'minimal' | 'detailed' | 'creative'
   size?: 'sm' | 'md' | 'lg'
   message?: string
+  // Backend integration props
+  queryState?: QueryState | UseQueryResult<any, Error>
+  mutationState?: MutationState | UseMutationResult<any, Error, any, any>
+  showOnlyInViewport?: boolean
+  triggerOnce?: boolean
+  rootMargin?: string
+  // Performance optimization
+  enablePerformanceMode?: boolean
+  priority?: 'high' | 'normal' | 'low'
 }
 
 const AgentWorkingAnimation: React.FC<AgentWorkingAnimationProps> = ({
   isWorking = true,
   type = 'creative',
   size = 'md',
-  message = 'AI agents are working on your content...'
+  message = 'AI agents are working on your content...',
+  queryState,
+  mutationState,
+  showOnlyInViewport = false,
+  triggerOnce = true,
+  rootMargin = '50px',
+  enablePerformanceMode = true,
+  priority = 'normal'
 }) => {
   const [dots, setDots] = useState('')
   const [currentPhase, setCurrentPhase] = useState(0)
+  
+  // Intersection Observer for viewport optimization
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce,
+    rootMargin,
+    skip: !showOnlyInViewport
+  })
+  
+  // Determine working state from backend integration
+  const backendWorking = React.useMemo(() => {
+    if (queryState) {
+      return queryState.isPending || queryState.isFetching
+    }
+    if (mutationState) {
+      return mutationState.isPending
+    }
+    return false
+  }, [queryState, mutationState])
+  
+  // Final working state (manual override or backend state)
+  const finalIsWorking = isWorking || backendWorking
+  
+  // Error state from backend
+  const hasError = queryState?.isError || mutationState?.isError
+  const errorMessage = queryState?.error?.message || mutationState?.error?.message
+  
+  // Viewport check for performance
+  const shouldAnimate = showOnlyInViewport ? inView : true
 
-  const phases = [
-    'Analyzing content...',
-    'Processing data...',
-    'Generating insights...',
-    'Finalizing results...'
-  ]
+  const phases = React.useMemo(() => {
+    if (hasError) {
+      return ['Error occurred...', 'Retrying...', 'Please wait...', 'Recovering...']
+    }
+    
+    if (queryState?.isFetching && !queryState?.isPending) {
+      return ['Refreshing data...', 'Syncing changes...', 'Updating content...', 'Almost done...']
+    }
+    
+    if (mutationState?.isPending) {
+      return ['Saving changes...', 'Processing request...', 'Updating server...', 'Finalizing...']
+    }
+    
+    return [
+      'Analyzing content...',
+      'Processing data...',
+      'Generating insights...',
+      'Finalizing results...'
+    ]
+  }, [hasError, queryState, mutationState])
 
   useEffect(() => {
-    if (!isWorking) return
+    if (!finalIsWorking || !shouldAnimate) return
 
     const dotsInterval = setInterval(() => {
       setDots(prev => prev.length >= 3 ? '' : prev + '.')
@@ -42,7 +117,7 @@ const AgentWorkingAnimation: React.FC<AgentWorkingAnimationProps> = ({
       clearInterval(dotsInterval)
       clearInterval(phaseInterval)
     }
-  }, [isWorking])
+  }, [finalIsWorking, shouldAnimate])
 
   const sizeClasses = {
     sm: 'w-32 h-32',
@@ -50,11 +125,47 @@ const AgentWorkingAnimation: React.FC<AgentWorkingAnimationProps> = ({
     lg: 'w-64 h-64'
   }
 
-  if (!isWorking) return null
+  // Performance optimization: don't render if not needed
+  if (!finalIsWorking || (showOnlyInViewport && !inView)) {
+    return showOnlyInViewport ? <div ref={ref} /> : null
+  }
+  
+  // Error state rendering
+  if (hasError) {
+    return (
+      <div ref={ref} className="flex flex-col items-center space-y-2 p-4">
+        <motion.div
+          className="w-8 h-8 border-2 border-red-500 rounded-full flex items-center justify-center"
+          animate={{ rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 0.5, repeat: 3 }}
+        >
+          <span className="text-red-500 text-sm">!</span>
+        </motion.div>
+        <p className="text-sm text-red-600 text-center">
+          {errorMessage || 'Something went wrong'}
+        </p>
+        <motion.button
+          className="text-xs text-blue-600 underline"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </motion.button>
+      </div>
+    )
+  }
 
   if (type === 'minimal') {
     return (
-      <div className="flex items-center space-x-2">
+      <div 
+        ref={ref} 
+        className="flex items-center space-x-2"
+        style={{
+          contain: enablePerformanceMode ? 'layout style paint' : undefined,
+          willChange: shouldAnimate ? 'transform' : 'auto'
+        }}
+      >
         <div className="flex space-x-1">
           {[0, 1, 2].map((i) => (
             <motion.div
@@ -79,7 +190,14 @@ const AgentWorkingAnimation: React.FC<AgentWorkingAnimationProps> = ({
 
   if (type === 'detailed') {
     return (
-      <div className="flex flex-col items-center space-y-4 p-6">
+      <div 
+        ref={ref} 
+        className="flex flex-col items-center space-y-4 p-6"
+        style={{
+          contain: enablePerformanceMode ? 'layout style paint' : undefined,
+          willChange: shouldAnimate ? 'transform' : 'auto'
+        }}
+      >
         <ContentLoader
           speed={2}
           width={240}
@@ -106,7 +224,14 @@ const AgentWorkingAnimation: React.FC<AgentWorkingAnimationProps> = ({
   }
 
   return (
-    <div className={`flex flex-col items-center justify-center ${sizeClasses[size]} relative`}>
+    <div 
+      ref={ref}
+      className={`flex flex-col items-center justify-center ${sizeClasses[size]} relative`}
+      style={{
+        contain: enablePerformanceMode ? 'layout style paint' : undefined,
+        willChange: shouldAnimate ? 'transform' : 'auto'
+      }}
+    >
       {/* Central AI Brain */}
       <motion.div
         className="relative w-16 h-16 mb-4"

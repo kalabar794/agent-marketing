@@ -4,7 +4,9 @@ import { config } from '@/lib/config';
 export abstract class BaseAgent {
   protected agentName: string;
   protected maxRetries: number = 3;
-  protected timeout: number = 30000; // 30 seconds
+  protected timeout: number = 30000; // 30 seconds timeout for faster failure
+  protected usePromptCaching: boolean = true;
+  protected maxOutputTokens: number = 8192; // Claude 4 supports up to 64K
 
   constructor(agentName: string) {
     this.agentName = agentName;
@@ -15,25 +17,69 @@ export abstract class BaseAgent {
   protected async callLLM(prompt: string, options?: { 
     model?: string; 
     maxTokens?: number; 
-    temperature?: number; 
+    temperature?: number;
+    useTools?: boolean;
+    systemPrompt?: string;
+    cachePrompt?: boolean;
   }): Promise<string> {
+    
+    // Quick fail if no API key configured
+    if (!config.anthropicApiKey || config.anthropicApiKey === '') {
+      console.log(`${this.agentName}: No API key configured, using fallback`);
+      throw new Error('API key not configured - using fallback');
+    }
     const {
-      model = 'claude-3-5-sonnet-20241022',
-      maxTokens = 4000,
-      temperature = 0.7
+      model = 'claude-4-sonnet',
+      maxTokens = this.maxOutputTokens,
+      temperature = 0.7,
+      useTools = false,
+      systemPrompt,
+      cachePrompt = this.usePromptCaching
     } = options || {};
 
-    const requestBody = {
+    // Build messages array with proper structure
+    const messages: any[] = [];
+    
+    if (systemPrompt) {
+      messages.push({
+        role: 'system',
+        content: cachePrompt ? [
+          {
+            type: 'text',
+            text: systemPrompt,
+            cache_control: { type: 'ephemeral' }
+          }
+        ] : systemPrompt
+      });
+    }
+
+    messages.push({
+      role: 'user',
+      content: cachePrompt ? [
+        {
+          type: 'text',
+          text: prompt,
+          cache_control: { type: 'ephemeral' }
+        }
+      ] : prompt
+    });
+
+    const requestBody: any = {
       model,
       max_tokens: maxTokens,
       temperature,
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
+      messages
     };
+
+    // Add Claude 4 specific features
+    if (cachePrompt) {
+      requestBody.cache_control = { type: 'ephemeral' };
+    }
+
+    // Add tools if specified (for future tool use implementation)
+    if (useTools) {
+      requestBody.tools = this.getAvailableTools();
+    }
 
     let lastError: Error | null = null;
     
@@ -42,13 +88,20 @@ export abstract class BaseAgent {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'x-api-key': config.anthropicApiKey,
+          'anthropic-version': '2024-06-01' // Updated for Claude 4 features
+        };
+
+        // Add beta features header for Claude 4 capabilities
+        if (cachePrompt || useTools) {
+          headers['anthropic-beta'] = 'prompt-caching-2024-07-31,tools-2024-04-04';
+        }
+
         const response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': config.anthropicApiKey,
-            'anthropic-version': '2023-06-01'
-          },
+          headers,
           body: JSON.stringify(requestBody),
           signal: controller.signal
         });
@@ -161,5 +214,107 @@ export abstract class BaseAgent {
 
   protected getExecutionTimestamp(): string {
     return new Date().toISOString();
+  }
+
+  protected getAvailableTools(): any[] {
+    // Base tools available to all agents - can be overridden by specific agents
+    return [
+      {
+        name: 'web_search',
+        description: 'Search the web for current information and trends',
+        input_schema: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'Search query' },
+            num_results: { type: 'number', description: 'Number of results to return' }
+          },
+          required: ['query']
+        }
+      },
+      {
+        name: 'content_analysis',
+        description: 'Analyze existing content for quality and optimization',
+        input_schema: {
+          type: 'object',
+          properties: {
+            content: { type: 'string', description: 'Content to analyze' },
+            analysis_type: { type: 'string', enum: ['seo', 'readability', 'engagement'] }
+          },
+          required: ['content', 'analysis_type']
+        }
+      }
+    ];
+  }
+
+  protected async executeToolCall(toolName: string, parameters: any): Promise<any> {
+    // Basic tool execution - can be enhanced with actual implementations
+    console.log(`Executing tool: ${toolName} with parameters:`, parameters);
+    
+    switch (toolName) {
+      case 'web_search':
+        return this.simulateWebSearch(parameters.query, parameters.num_results || 5);
+      case 'content_analysis':
+        return this.simulateContentAnalysis(parameters.content, parameters.analysis_type);
+      default:
+        throw new Error(`Unknown tool: ${toolName}`);
+    }
+  }
+
+  private async simulateWebSearch(query: string, numResults: number): Promise<any> {
+    // Placeholder for web search functionality
+    return {
+      query,
+      results: Array.from({ length: Math.min(numResults, 3) }, (_, i) => ({
+        title: `Search Result ${i + 1} for "${query}"`,
+        url: `https://example.com/result-${i + 1}`,
+        snippet: `Relevant information about ${query} from search result ${i + 1}`
+      }))
+    };
+  }
+
+  private async simulateContentAnalysis(content: string, analysisType: string): Promise<any> {
+    // Placeholder for content analysis functionality
+    const wordCount = content.split(' ').length;
+    
+    return {
+      analysis_type: analysisType,
+      word_count: wordCount,
+      readability_score: Math.min(100, 60 + (wordCount / 100) * 5),
+      seo_score: Math.random() * 40 + 60,
+      engagement_score: Math.random() * 30 + 70,
+      suggestions: [
+        'Consider adding more specific examples',
+        'Improve keyword density for better SEO',
+        'Add compelling call-to-action statements'
+      ]
+    };
+  }
+
+  protected formatToolUse(toolName: string, parameters: any): string {
+    // Format tool use in XML format for Anthropic models
+    return `<tool>${toolName}</tool><tool_input>${JSON.stringify(parameters)}</tool_input>`;
+  }
+
+  protected parseToolResponse(response: string): { toolCalls: any[], content: string } {
+    // Parse tool calls from response (basic implementation)
+    const toolCalls: any[] = [];
+    let content = response;
+
+    // Extract tool calls in XML format
+    const toolMatches = response.matchAll(/<tool>(.*?)<\/tool><tool_input>(.*?)<\/tool_input>/g);
+    
+    for (const match of toolMatches) {
+      try {
+        toolCalls.push({
+          name: match[1],
+          parameters: JSON.parse(match[2])
+        });
+        content = content.replace(match[0], '');
+      } catch (error) {
+        console.warn('Failed to parse tool call:', match[0]);
+      }
+    }
+
+    return { toolCalls, content: content.trim() };
   }
 }

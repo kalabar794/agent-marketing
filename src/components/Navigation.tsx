@@ -3,21 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  PenTool, 
-  Workflow, 
-  Shield, 
-  Settings,
-  Sparkles
-} from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Dashboard', href: '/dashboard' },
   { name: 'Create Content', href: '/create' },
   { name: 'Agent Workflow', href: '/workflow' },
-  { name: 'Quality Control', href: '/quality' },
 ];
 
 export function Navigation() {

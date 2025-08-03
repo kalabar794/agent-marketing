@@ -112,7 +112,7 @@ export default function CreateContent() {
         contentType: selectedType,
         topic: formData.topic.trim(),
         audience: formData.audience.trim(),
-        goals: formData.goals.trim(),
+        goals: [formData.goals.trim()],
         tone: formData.tone?.trim() || 'Professional and engaging',
         platforms: selectedType === 'social' ? ['linkedin', 'twitter', 'facebook'] : undefined,
         brandGuidelines: formData.brandGuidelines?.trim()
@@ -148,28 +148,35 @@ export default function CreateContent() {
   return (
     <div className="min-h-screen bg-slate-900">
       {/* Header Section with Vibrant Background */}
-      <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 py-16">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-blue-500/10 to-purple-600/20 pointer-events-none"></div>
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-pink-500/10 to-purple-600/20 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-6 py-20 lg:py-28 relative z-10">
           <div className="text-center">
             <div className="space-y-6">
               <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium border border-white/30">
-                <Sparkles className="w-4 h-4 mr-2 text-yellow-300" />
+                <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></span>
                 AI-Powered Content Creation
               </div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-white">
-                Create Professional Marketing Content
+              <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight">
+                Create Professional
+                <br />
+                <span className="text-yellow-300 drop-shadow-lg">Marketing Content</span>
               </h1>
-              <p className="text-xl text-white/90 max-w-2xl mx-auto">
+              <p className="text-xl text-white/90 max-w-lg mx-auto leading-relaxed drop-shadow-md">
                 Choose your content type and let our specialized AI agents collaborate 
                 to create compelling, on-brand content in minutes.
               </p>
             </div>
           </div>
         </div>
+        
+        {/* Floating Background Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-yellow-400/20 rounded-full blur-xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl animate-float-delay-1"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-pink-400/20 rounded-full blur-lg animate-float-delay-2"></div>
       </section>
       
-      <div className="container mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-20">
 
         {/* Content Type Selection */}
         <div className="mb-12">
@@ -181,10 +188,10 @@ export default function CreateContent() {
             {contentTypes.map((type, index) => (
               <Card 
                 key={type.id}
-                className={`cursor-pointer transition-all duration-300 shadow-lg hover:shadow-2xl animate-slide-up transform hover:scale-105 ${
+                className={`cursor-pointer transition-all duration-300 shadow-2xl hover:shadow-elevated animate-slide-up transform hover:scale-105 ${
                   selectedType === type.id 
-                    ? 'ring-2 ring-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200' 
-                    : 'hover:bg-gradient-to-br hover:from-gray-50 hover:to-blue-50 bg-white'
+                    ? 'ring-2 ring-yellow-400 bg-gradient-to-br from-orange-900/50 via-pink-900/50 to-purple-900/50 border-yellow-400/50 text-white backdrop-blur-sm' 
+                    : 'hover:bg-gradient-to-br hover:from-slate-700 hover:to-purple-900/30 bg-white/10 backdrop-blur-sm text-white border-white/20 hover:border-white/40'
                 }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => setSelectedType(type.id)}
@@ -193,13 +200,13 @@ export default function CreateContent() {
                   <div className="flex items-center space-x-3">
                     <div className={`p-3 rounded-lg ${
                       selectedType === type.id 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600' 
-                        : 'bg-gradient-to-r from-gray-200 to-gray-300'
+                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500' 
+                        : 'bg-gradient-to-r from-purple-500 to-pink-500'
                     }`}>
                       <type.icon className={`w-6 h-6 ${
                         selectedType === type.id 
                           ? 'text-white' 
-                          : 'text-gray-600'
+                          : 'text-white'
                       }`} />
                     </div>
                     <div>
@@ -247,10 +254,10 @@ export default function CreateContent() {
         {/* Project Details Form */}
         {selectedType && (
           <div className="mb-12 animate-fade-in">
-            <Card className="shadow-professional">
+            <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20 text-white">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-5 h-5 text-primary" />
+                  <Settings className="w-5 h-5 text-yellow-400" />
                   <span>Project Details</span>
                 </CardTitle>
                 <CardDescription>
@@ -267,7 +274,7 @@ export default function CreateContent() {
                       {field.description}
                     </p>
                     <textarea
-                      className="w-full p-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                      className="w-full p-3 border border-white/30 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-colors"
                       rows={3}
                       placeholder={field.placeholder}
                       value={formData[field.id] || ''}
@@ -283,10 +290,10 @@ export default function CreateContent() {
         {/* Selected Type Summary & Create Button */}
         {selectedType && (
           <div className="text-center animate-fade-in">
-            <Card className="shadow-professional mb-8 bg-gradient-card border-primary/20">
+            <Card className="shadow-2xl mb-8 bg-white/10 backdrop-blur-sm border-white/20 text-white">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-center space-x-4 mb-4">
-                  {selectedTypeData && <selectedTypeData.icon className="w-8 h-8 text-primary" />}
+                  {selectedTypeData && <selectedTypeData.icon className="w-8 h-8 text-yellow-400" />}
                   <div>
                     <h3 className="text-xl font-semibold text-foreground">
                       Ready to create your {selectedTypeData?.title}
@@ -299,7 +306,7 @@ export default function CreateContent() {
                 
                 <div className="flex flex-wrap justify-center gap-2 mb-6">
                   {selectedTypeData?.agents.map((agent) => (
-                    <Badge key={agent} className="bg-primary/10 text-primary">
+                    <Badge key={agent} className="bg-gradient-to-r from-orange-500/20 to-pink-500/20 text-orange-300 border-orange-400/30">
                       {agent}
                     </Badge>
                   ))}
@@ -308,7 +315,7 @@ export default function CreateContent() {
             </Card>
 
             <Button 
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl text-lg px-12 py-4 h-auto transform hover:scale-105 transition-all duration-200"
+              className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold text-lg px-12 py-4 h-auto rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-200"
               onClick={handleCreateContent}
               disabled={isLoading}
             >
