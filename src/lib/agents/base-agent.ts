@@ -4,7 +4,7 @@ import { config } from '@/lib/config';
 export abstract class BaseAgent {
   protected agentName: string;
   protected maxRetries: number = 3;
-  protected timeout: number = 30000; // 30 seconds timeout for faster failure
+  protected timeout: number = 120000; // 2 minutes timeout (Background functions have 15 minutes total)
   protected usePromptCaching: boolean = true;
   protected maxOutputTokens: number = 8192; // Claude 4 supports up to 64K
 

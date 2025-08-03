@@ -58,16 +58,22 @@
       "namedRegex": "^/dashboard(?:/)?$"
     },
     {
+      "page": "/demo",
+      "regex": "^/demo(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/demo(?:/)?$"
+    },
+    {
+      "page": "/demo-backend",
+      "regex": "^/demo\\-backend(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/demo\\-backend(?:/)?$"
+    },
+    {
       "page": "/favicon.ico",
       "regex": "^/favicon\\.ico(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/favicon\\.ico(?:/)?$"
-    },
-    {
-      "page": "/quality",
-      "regex": "^/quality(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/quality(?:/)?$"
     },
     {
       "page": "/workflow",

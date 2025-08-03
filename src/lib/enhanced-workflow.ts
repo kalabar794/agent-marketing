@@ -11,10 +11,15 @@ interface EnhancedWorkflowOptions {
   enableOptimization?: boolean;
   maxOptimizationCycles?: number;
   enableFallbacks?: boolean;
+  demoMode?: boolean;
 }
 
 export class EnhancedContentWorkflow {
   private static instances: Map<string, EnhancedContentWorkflow> = new Map();
+  
+  public static setInstance(id: string, instance: EnhancedContentWorkflow): void {
+    this.instances.set(id, instance);
+  }
   
   private id: string;
   private request: ContentGenerationRequest;
@@ -461,5 +466,220 @@ export class EnhancedContentWorkflow {
     }
     
     return recommendations;
+  }
+
+  // Background processing methods
+  public async executeWorkflowInBackground(workflowId: string): Promise<void> {
+    try {
+      this.id = workflowId;
+      this.status.status = 'running';
+      this.status.startTime = new Date();
+      
+      console.log(`🔄 Starting background enhanced workflow execution for ${this.request.contentType}`);
+      
+      // Phase 1: Dynamic Task Planning
+      console.log('📋 Phase 1: Dynamic Task Planning');
+      const delegation = this.delegator.delegateTasks(
+        this.request,
+        this.options.maxExecutionTime,
+        this.options.priorityMode
+      );
+
+      // Phase 2: Execute agents with enhanced orchestration
+      console.log('🔄 Phase 2: Enhanced Agent Execution');
+      const agentResults = await this.orchestrator.executeWorkflow(
+        this.request,
+        (agentId, progress) => {
+          this.updateAgentProgress(agentId, progress);
+        }
+      );
+
+      // Store intermediate results
+      await this.storeIntermediateResults(agentResults);
+
+      // Phase 3: Quality Evaluation and Optimization
+      if (this.options.enableOptimization) {
+        console.log('🎯 Phase 3: Quality Evaluation and Optimization');
+        const optimizedResults = await this.evaluator.optimizeWorkflow(
+          agentResults,
+          this.request,
+          this.options.maxOptimizationCycles
+        );
+
+        // Update with optimized results
+        optimizedResults.forEach((result, agentId) => {
+          agentResults.set(agentId, result);
+        });
+      }
+
+      // Phase 4: Final content generation and assembly
+      console.log('📝 Phase 4: Final Content Assembly');
+      const finalContent = await this.assembleFinalContent(agentResults);
+      
+      // Calculate quality scores
+      const qualityScores = await this.evaluator.calculateQualityScores(
+        finalContent,
+        this.request,
+        agentResults
+      );
+
+      // Store final results
+      this.status.content = finalContent;
+      this.status.qualityScores = qualityScores;
+      this.status.status = 'completed';
+      this.status.endTime = new Date();
+      this.status.progress = 100;
+      
+      // Mark all agents as completed
+      this.status.agents.forEach(agent => {
+        agent.status = 'completed';
+        agent.progress = 100;
+      });
+
+      console.log(`✅ Background workflow ${workflowId} completed successfully`);
+      
+    } catch (error) {
+      console.error(`❌ Background workflow ${workflowId} failed:`, error);
+      this.markAsFailed(error instanceof Error ? error.message : 'Unknown error');
+    }
+  }
+
+  public markAsFailed(errorMessage: string): void {
+    this.status.status = 'failed';
+    this.status.error = errorMessage;
+    this.status.endTime = new Date();
+    
+    // Mark any running agents as failed
+    this.status.agents.forEach(agent => {
+      if (agent.status === 'running') {
+        agent.status = 'failed';
+      }
+    });
+  }
+
+  public async simulateDemoWorkflow(workflowId: string): Promise<void> {
+    try {
+      this.id = workflowId;
+      this.status.status = 'running';
+      this.status.startTime = new Date();
+      
+      console.log(`🎭 Starting demo workflow simulation for ${workflowId}`);
+      
+      const agents = [
+        'market-researcher',
+        'content-strategist', 
+        'content-writer',
+        'ai-seo-optimizer',
+        'content-editor'
+      ];
+      
+      // Simulate progressive completion
+      for (let i = 0; i < agents.length; i++) {
+        const agentId = agents[i];
+        const agentIndex = this.status.agents.findIndex(a => a.agentId === agentId);
+        
+        if (agentIndex !== -1) {
+          // Mark as running
+          this.status.agents[agentIndex].status = 'running';
+          this.status.agents[agentIndex].progress = 0;
+          
+          // Simulate progress over 5-10 seconds
+          const duration = 5000 + Math.random() * 5000;
+          const steps = 10;
+          const stepDuration = duration / steps;
+          
+          for (let step = 0; step <= steps; step++) {
+            await new Promise(resolve => setTimeout(resolve, stepDuration));
+            this.status.agents[agentIndex].progress = Math.round((step / steps) * 100);
+            this.status.progress = Math.round(((i * steps + step) / (agents.length * steps)) * 100);
+          }
+          
+          // Mark as completed
+          this.status.agents[agentIndex].status = 'completed';
+        }
+      }
+      
+      // Generate demo content
+      const demoContent = this.generateDemoContent();
+      
+      this.status.content = demoContent;
+      this.status.qualityScores = {
+        overall: 0.85,
+        content: 0.88,
+        seo: 0.82,
+        engagement: 0.87,
+        brand: 0.83
+      };
+      this.status.status = 'completed';
+      this.status.endTime = new Date();
+      this.status.progress = 100;
+      
+      console.log(`✅ Demo workflow ${workflowId} completed`);
+      
+    } catch (error) {
+      console.error(`❌ Demo workflow ${workflowId} failed:`, error);
+      this.markAsFailed(error instanceof Error ? error.message : 'Demo workflow failed');
+    }
+  }
+
+  private generateDemoContent(): any {
+    return {
+      id: `demo-content-${Date.now()}`,
+      title: `The Future of ${this.request.topic}: A Complete Guide`,
+      content: `# The Future of ${this.request.topic}: A Complete Guide
+
+## Introduction
+${this.request.topic} is transforming the way ${this.request.audience} approach their work and achieve their goals.
+
+## Key Benefits
+- **Enhanced Efficiency**: Streamlined processes that save time and resources
+- **Better Results**: Proven strategies that deliver measurable outcomes  
+- **Competitive Advantage**: Stay ahead with cutting-edge approaches
+- **Scalable Solutions**: Growth-ready implementations
+
+## Implementation Strategy
+1. Start with clear objectives aligned with your goals
+2. Implement proven methodologies step by step
+3. Monitor progress and optimize continuously
+4. Scale successful approaches across your organization
+
+## Best Practices
+- Focus on data-driven decision making
+- Maintain consistent quality standards
+- Invest in team training and development
+- Stay updated with industry trends
+
+## Conclusion
+The integration of ${this.request.topic} represents a significant opportunity for ${this.request.audience} to achieve their goals and drive meaningful results.
+
+*Ready to get started? Contact our team to learn more about implementing these strategies for your organization.*`,
+      summary: `Comprehensive guide to ${this.request.topic} for ${this.request.audience} with actionable strategies and best practices.`,
+      seoKeywords: [this.request.topic.toLowerCase(), 'best practices', 'implementation', 'strategy'],
+      readabilityScore: 85,
+      platforms: this.request.contentType === 'social' ? ['LinkedIn', 'Twitter', 'Facebook'] : [],
+      metadata: {
+        contentType: this.request.contentType,
+        generationMethod: 'demo-mode',
+        totalAgents: 5,
+        executionTime: 60000, // 1 minute
+        qualityMode: 'demo'
+      }
+    };
+  }
+
+  private updateAgentProgress(agentId: string, progress: number): void {
+    const agentIndex = this.status.agents.findIndex(a => a.agentId === agentId);
+    if (agentIndex !== -1) {
+      this.status.agents[agentIndex].progress = progress;
+      if (progress === 100) {
+        this.status.agents[agentIndex].status = 'completed';
+      } else if (progress > 0) {
+        this.status.agents[agentIndex].status = 'running';
+      }
+    }
+    
+    // Update overall progress
+    const totalProgress = this.status.agents.reduce((sum, agent) => sum + agent.progress, 0);
+    this.status.progress = Math.round(totalProgress / this.status.agents.length);
   }
 }
