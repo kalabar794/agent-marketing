@@ -16,19 +16,32 @@ class ConfigError extends Error {
 }
 
 function validateApiKey(apiKey: string | undefined): string {
+  // Allow missing API key in production - will use demo mode
   if (!apiKey) {
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🎭 ANTHROPIC_API_KEY not found - will use demo mode in production');
+      return '';
+    }
     throw new ConfigError(
       'ANTHROPIC_API_KEY is required. Please add your Claude API key to .env.local'
     );
   }
 
   if (!apiKey.startsWith('sk-ant-api03-')) {
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🎭 Invalid API key format - will use demo mode in production');
+      return '';
+    }
     throw new ConfigError(
       'Invalid ANTHROPIC_API_KEY format. Expected format: sk-ant-api03-...'
     );
   }
 
   if (apiKey.length < 50) {
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🎭 Incomplete API key - will use demo mode in production');
+      return '';
+    }
     throw new ConfigError(
       'ANTHROPIC_API_KEY appears to be incomplete. Please check your API key.'
     );

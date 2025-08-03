@@ -46,28 +46,28 @@ export function QualityMetrics() {
       {metrics.map((metric, index) => (
         <div 
           key={metric.label} 
-          className="bg-card rounded-lg shadow-professional p-6 animate-slide-up"
+          className="bg-gray-800 border border-gray-600 rounded-lg shadow-professional p-6 animate-slide-up"
           style={{ animationDelay: `${index * 0.1}s` }}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className={`p-2 rounded-lg bg-muted ${metric.color}`}>
+              <div className={`p-2 rounded-lg bg-gray-700 ${metric.color}`}>
                 <metric.icon className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-sm font-medium text-foreground">
+                <div className="text-sm font-medium text-white">
                   {metric.label}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-gray-300">
                   Target: {metric.target}%
                 </div>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-2xl font-bold text-white">
                 {metric.value}%
               </div>
-              <div className={`text-sm ${metric.value >= metric.target ? 'text-success' : 'text-warning'}`}>
+              <div className={`text-sm ${metric.value >= metric.target ? 'text-green-400' : 'text-yellow-400'}`}>
                 {metric.value >= metric.target ? '+' : ''}{metric.value - metric.target}
               </div>
             </div>

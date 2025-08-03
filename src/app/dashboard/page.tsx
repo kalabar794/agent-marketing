@@ -142,28 +142,28 @@ const metrics = [
     value: "8",
     change: "+2 this week",
     icon: FileText,
-    color: "text-primary"
+    color: "text-blue-400"
   },
   {
     title: "Agents Working",
     value: "4",
     change: "Real-time collaboration",
     icon: Users,
-    color: "text-accent"
+    color: "text-purple-400"
   },
   {
     title: "Success Rate",
     value: "96%",
     change: "+4% from last month",
     icon: BarChart3,
-    color: "text-success"
+    color: "text-green-400"
   },
   {
     title: "Avg. Completion Time",
     value: "12min",
     change: "-8min improvement",
     icon: Clock,
-    color: "text-warning"
+    color: "text-yellow-400"
   }
 ];
 
@@ -180,66 +180,77 @@ export default function Dashboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Completed':
-        return 'text-success';
+        return 'text-green-400';
       case 'In Progress':
-        return 'text-primary';
+        return 'text-blue-400';
       case 'Review':
-        return 'text-warning';
+        return 'text-yellow-400';
       case 'Planning':
-        return 'text-accent';
+        return 'text-purple-400';
       default:
-        return 'text-muted-foreground';
+        return 'text-gray-400';
     }
   };
 
   const getStatusBg = (status: string) => {
     switch (status) {
       case 'Completed':
-        return 'bg-success/10';
+        return 'bg-green-900/30';
       case 'In Progress':
-        return 'bg-primary/10';
+        return 'bg-blue-900/30';
       case 'Review':
-        return 'bg-warning/10';
+        return 'bg-yellow-900/30';
       case 'Planning':
-        return 'bg-accent/10';
+        return 'bg-purple-900/30';
       default:
-        return 'bg-muted';
+        return 'bg-gray-700';
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-900">
       {/* Header Section with Vibrant Background */}
-      <section className="relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 py-16">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/10 to-pink-600/20 pointer-events-none"></div>
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-pink-500/10 to-purple-600/20 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-6 py-20 lg:py-28 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-3">
-                Marketing Dashboard
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium border border-white/30 mb-6">
+                <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                Real-Time Dashboard
+              </div>
+              <h1 className="text-5xl lg:text-7xl font-bold text-white leading-tight mb-6">
+                Marketing
+                <br />
+                <span className="text-yellow-300 drop-shadow-lg">Dashboard</span>
               </h1>
-              <p className="text-xl text-white/90">
+              <p className="text-xl text-white/90 leading-relaxed drop-shadow-md">
                 Monitor your AI agents and content generation pipeline
               </p>
             </div>
             <Link href="/create" className="mt-6 md:mt-0">
-              <Button className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 transition-all duration-200">
-                <Plus className="w-4 h-4 mr-2" />
+              <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold text-lg px-8 py-4 h-auto rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-200">
+                <Plus className="w-5 h-5 mr-2" />
                 New Project
               </Button>
             </Link>
           </div>
         </div>
+        
+        {/* Floating Background Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-yellow-400/20 rounded-full blur-xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl animate-float-delay-1"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-pink-400/20 rounded-full blur-lg animate-float-delay-2"></div>
       </section>
       
-      <div className="container mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-20">
 
         {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {metrics.map((metric, index) => (
             <Card 
               key={metric.title} 
-              className="bg-slate-800 border-slate-700 shadow-professional hover:shadow-elevated transition-all duration-300 animate-slide-up"
+              className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl hover:shadow-elevated transition-all duration-300 animate-slide-up hover:bg-white/15"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -260,10 +271,10 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Active Agents */}
-          <Card className="bg-slate-800 border-slate-700 shadow-professional">
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-blue-400" />
+                <Users className="w-5 h-5 text-yellow-400" />
                 <span className="text-white">Active AI Agents</span>
               </CardTitle>
               <CardDescription className="text-gray-300">
@@ -288,10 +299,10 @@ export default function Dashboard() {
           </Card>
 
           {/* Current Pipeline */}
-          <Card className="bg-slate-800 border-slate-700 shadow-professional">
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-purple-400" />
+                <TrendingUp className="w-5 h-5 text-orange-400" />
                 <span className="text-white">Content Pipeline</span>
               </CardTitle>
               <CardDescription className="text-gray-300">
@@ -309,10 +320,10 @@ export default function Dashboard() {
 
         {/* Quality Metrics */}
         <div className="mb-8">
-          <Card className="bg-slate-800 border-slate-700 shadow-professional">
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="w-5 h-5 text-blue-400" />
+                <BarChart3 className="w-5 h-5 text-pink-400" />
                 <span className="text-white">Quality Metrics</span>
               </CardTitle>
               <CardDescription className="text-gray-300">
@@ -326,10 +337,10 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Projects */}
-        <Card className="bg-slate-800 border-slate-700 shadow-professional">
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <FileText className="w-5 h-5 text-blue-400" />
+              <FileText className="w-5 h-5 text-cyan-400" />
               <span className="text-white">Recent Projects</span>
             </CardTitle>
             <CardDescription className="text-gray-300">
@@ -341,7 +352,7 @@ export default function Dashboard() {
               {recentProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="flex items-center justify-between p-4 border border-slate-600 rounded-lg hover:bg-slate-700/50 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-4 border border-white/20 rounded-lg hover:bg-white/10 transition-colors cursor-pointer backdrop-blur-sm"
                 >
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
@@ -358,12 +369,12 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right">
                     <div className="flex items-center space-x-2 mb-1">
-                      {project.completion === 100 && <CheckCircle2 className="w-4 h-4 text-success" />}
+                      {project.completion === 100 && <CheckCircle2 className="w-4 h-4 text-green-400" />}
                       <span className="text-sm font-medium text-white">
                         {project.completion}%
                       </span>
                     </div>
-                    <div className="w-24 h-2 bg-slate-600 rounded-full">
+                    <div className="w-24 h-2 bg-white/20 rounded-full">
                       <div
                         className="h-full bg-gradient-primary rounded-full transition-all duration-300"
                         style={{ width: `${project.completion}%` }}

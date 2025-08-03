@@ -56,7 +56,7 @@ export function ProgressPipeline({ stages, currentStage, className }: ProgressPi
     <div className={cn('space-y-6', className)}>
       <div className="relative">
         {/* Timeline Line */}
-        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border"></div>
+        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-600"></div>
         
         {/* Stages */}
         <div className="space-y-6">
@@ -74,7 +74,7 @@ export function ProgressPipeline({ stages, currentStage, className }: ProgressPi
               >
                 {/* Status Icon */}
                 <div className={cn(
-                  'relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background',
+                  'relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-800',
                   getStatusColor(stage.status)
                 )}>
                   {stage.icon ? (
@@ -89,33 +89,33 @@ export function ProgressPipeline({ stages, currentStage, className }: ProgressPi
                   <div className={cn(
                     'p-4 rounded-lg border transition-all duration-200',
                     isActive 
-                      ? 'bg-primary/5 border-primary shadow-professional' 
+                      ? 'bg-blue-900/20 border-blue-500 shadow-professional' 
                       : isCompleted
-                      ? 'bg-success/5 border-success/30'
-                      : 'bg-card border-border'
+                      ? 'bg-green-900/20 border-green-500/30'
+                      : 'bg-gray-800 border-gray-600'
                   )}>
                     <div className="flex items-center justify-between mb-2">
                       <h3 className={cn(
                         'font-semibold',
-                        isActive ? 'text-primary' : isCompleted ? 'text-success' : 'text-foreground'
+                        isActive ? 'text-blue-400' : isCompleted ? 'text-green-400' : 'text-white'
                       )}>
                         {stage.name}
                       </h3>
                       {stage.estimatedTime && isActive && (
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                        <span className="text-xs text-gray-300 bg-gray-700 px-2 py-1 rounded">
                           {stage.estimatedTime}
                         </span>
                       )}
                     </div>
                     
-                    <p className="text-sm text-muted-foreground mb-3">
+                    <p className="text-sm text-gray-300 mb-3">
                       {stage.description}
                     </p>
 
                     {/* Progress Bar for Active Stage */}
                     {isActive && typeof stage.progress === 'number' && (
                       <div className="space-y-2">
-                        <div className="flex justify-between text-xs text-muted-foreground">
+                        <div className="flex justify-between text-xs text-gray-300">
                           <span>Progress</span>
                           <span>{stage.progress}%</span>
                         </div>
@@ -125,7 +125,7 @@ export function ProgressPipeline({ stages, currentStage, className }: ProgressPi
 
                     {/* Completion Status */}
                     {isCompleted && (
-                      <div className="flex items-center space-x-2 text-xs text-success">
+                      <div className="flex items-center space-x-2 text-xs text-green-400">
                         <CheckCircle className="w-3 h-3" />
                         <span>Completed</span>
                       </div>

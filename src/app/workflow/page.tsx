@@ -137,14 +137,97 @@ function WorkflowPageContent() {
   if (error || !workflowStatus) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
+        <div className="text-center max-w-6xl mx-auto px-4">
           <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-6" />
-          <h2 className="text-2xl font-semibold text-white mb-3">Agent Workflow</h2>
+          <h2 className="text-2xl font-semibold text-white mb-3">AI Agent Specialists</h2>
           {error === 'No workflow ID provided' ? (
             <>
               <p className="text-gray-300 mb-6">
-                This page shows real-time progress of content generation workflows. You'll need to start a workflow first.
+                Meet the specialized AI agents that power our content generation system.
               </p>
+              
+              {/* Agent Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {Object.entries(agentMapping).map(([id, agent]) => (
+                  <Card key={id} className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+                    <CardContent className="pt-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="text-2xl">{agent.icon}</div>
+                        <div>
+                          <h3 className="font-semibold text-sm">{agent.name}</h3>
+                          <p className="text-xs text-gray-300">{agent.role}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {id === 'market-researcher' && (
+                          <div className="text-xs text-gray-400">
+                            • Analyzes industry trends and competitive landscape<br/>
+                            • Identifies market opportunities and threats<br/>
+                            • Provides data-driven market insights
+                          </div>
+                        )}
+                        {id === 'audience-analyzer' && (
+                          <div className="text-xs text-gray-400">
+                            • Researches target audience demographics<br/>
+                            • Analyzes user behavior and preferences<br/>
+                            • Creates detailed audience personas
+                          </div>
+                        )}
+                        {id === 'content-strategist' && (
+                          <div className="text-xs text-gray-400">
+                            • Develops comprehensive content strategies<br/>
+                            • Aligns content with business objectives<br/>
+                            • Plans content distribution and timing
+                          </div>
+                        )}
+                        {id === 'ai-seo-optimizer' && (
+                          <div className="text-xs text-gray-400">
+                            • Optimizes content for search engines<br/>
+                            • Researches high-value keywords<br/>
+                            • Implements technical SEO best practices
+                          </div>
+                        )}
+                        {id === 'content-writer' && (
+                          <div className="text-xs text-gray-400">
+                            • Creates compelling, on-brand content<br/>
+                            • Adapts tone and style to audience<br/>
+                            • Ensures clear and engaging messaging
+                          </div>
+                        )}
+                        {id === 'content-editor' && (
+                          <div className="text-xs text-gray-400">
+                            • Reviews and refines content quality<br/>
+                            • Ensures consistency and accuracy<br/>
+                            • Optimizes readability and flow
+                          </div>
+                        )}
+                        {id === 'social-media-specialist' && (
+                          <div className="text-xs text-gray-400">
+                            • Creates platform-specific social content<br/>
+                            • Optimizes for engagement and reach<br/>
+                            • Plans posting schedules and hashtags
+                          </div>
+                        )}
+                        {id === 'landing-page-specialist' && (
+                          <div className="text-xs text-gray-400">
+                            • Designs high-converting landing pages<br/>
+                            • Optimizes user experience and CTAs<br/>
+                            • Implements conversion best practices
+                          </div>
+                        )}
+                        {id === 'performance-analyst' && (
+                          <div className="text-xs text-gray-400">
+                            • Tracks content performance metrics<br/>
+                            • Provides data-driven optimization insights<br/>
+                            • Monitors ROI and engagement analytics
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
               <div className="space-y-3">
                 <Link href="/create">
                   <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white">
@@ -180,24 +263,48 @@ function WorkflowPageContent() {
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header with Project Info */}
+      {/* Header Section with Vibrant Background */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-pink-500/10 to-purple-600/20 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-6 py-16 relative z-10">
+          <div className="text-center">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium border border-white/30 mb-6">
+              <span className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse"></span>
+              {workflowStatus?.workflowType === 'demo' ? 'Demo Mode - Live Preview' : 'Live Workflow Monitoring'}
+            </div>
+            {workflowStatus?.workflowType === 'demo' && (
+              <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-400/50 rounded-lg backdrop-blur-sm text-yellow-300 text-sm">
+                <span className="font-semibold">Demo Mode:</span> This is a preview showing how AI agents would collaborate. 
+                For real AI content generation, the API key would need to be configured.
+              </div>
+            )}
+            <h1 className="text-4xl lg:text-6xl font-bold text-white leading-tight mb-4">
+              Workflow
+              <br />
+              <span className="text-yellow-300 drop-shadow-lg">in Progress</span>
+            </h1>
+            <p className="text-xl text-white/90 leading-relaxed drop-shadow-md">
+              Watch your AI agents collaborate in real-time
+            </p>
+          </div>
+        </div>
+        
+        {/* Floating Background Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-yellow-400/20 rounded-full blur-xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl animate-float-delay-1"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-pink-400/20 rounded-full blur-lg animate-float-delay-2"></div>
+      </section>
+      
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Project Info */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                Workflow in Progress
-              </h1>
-              <p className="text-muted-foreground">
-                Watch your AI agents collaborate in real-time
-              </p>
-            </div>
             
             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
               <Button
                 variant="outline"
                 onClick={() => setIsRunning(!isRunning)}
-                className="shadow-professional"
+                className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 transition-all duration-200"
               >
                 {isRunning ? (
                   <>
@@ -212,17 +319,15 @@ function WorkflowPageContent() {
                 )}
               </Button>
               
-              <Link href={`/quality?id=${workflowId}`}>
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-2xl">
-                  <Eye className="w-4 h-4 mr-2" />
-                  Preview Result
-                </Button>
-              </Link>
+              <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold px-6 py-3 rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-200">
+                <Eye className="w-4 h-4 mr-2" />
+                Preview Result
+              </Button>
             </div>
           </div>
 
           {/* Project Status Card */}
-          <Card className="shadow-professional mb-8">
+          <Card className="shadow-2xl mb-8 bg-white/10 backdrop-blur-sm border-white/20">
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
@@ -266,10 +371,10 @@ function WorkflowPageContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Workflow Pipeline */}
           <div className="lg:col-span-2 space-y-8">
-            <Card className="shadow-professional">
+            <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <RefreshCw className={`w-5 h-5 text-primary ${isRunning ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-5 h-5 text-yellow-400 ${isRunning ? 'animate-spin' : ''}`} />
                   <span>Content Generation Pipeline</span>
                 </CardTitle>
                 <CardDescription>
@@ -289,7 +394,7 @@ function WorkflowPageContent() {
             </Card>
 
             {/* Stage Details */}
-            <Card className="shadow-professional">
+            <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
                 <CardTitle>Stage Details & Outputs</CardTitle>
                 <CardDescription>
@@ -357,7 +462,7 @@ function WorkflowPageContent() {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Active Agents */}
-            <Card className="shadow-professional">
+            <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
                 <CardTitle>AI Agents Status</CardTitle>
                 <CardDescription>
@@ -393,7 +498,7 @@ function WorkflowPageContent() {
             </Card>
 
             {/* Live Activity Feed */}
-            <Card className="shadow-professional">
+            <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <MessageSquare className="w-5 h-5" />
@@ -424,7 +529,7 @@ function WorkflowPageContent() {
             </Card>
 
             {/* Quick Actions */}
-            <Card className="shadow-professional">
+            <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
@@ -437,12 +542,10 @@ function WorkflowPageContent() {
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   Force Complete Stage
                 </Button>
-                <Link href={`/quality?id=${workflowId}`} className="block">
-                  <Button className="w-full justify-start bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                    <ArrowRight className="w-4 h-4 mr-2" />
-                    Go to Quality Control
-                  </Button>
-                </Link>
+                <Button className="w-full justify-start bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold" disabled>
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  View Final Content
+                </Button>
               </CardContent>
             </Card>
           </div>
