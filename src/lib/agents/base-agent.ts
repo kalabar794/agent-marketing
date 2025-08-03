@@ -7,7 +7,7 @@ export abstract class BaseAgent {
   protected maxRetries: number = 3;
   protected timeout: number = 120000; // 2 minutes timeout (Background functions have 15 minutes total)
   protected usePromptCaching: boolean = true;
-  protected maxOutputTokens: number = 8192; // Claude 4 supports up to 64K
+  protected maxOutputTokens: number = 4000; // Appropriate for comprehensive blog content (2000+ words)
 
   constructor(agentName: string) {
     this.agentName = agentName;
@@ -31,7 +31,7 @@ export abstract class BaseAgent {
 
     const {
       model = 'claude-sonnet-4-20250514', // Use Claude Sonnet 4 (latest)
-      maxTokens = Math.min(this.maxOutputTokens, 800), // Limit to 800 tokens for focused content
+      maxTokens = this.maxOutputTokens, // Use full token allowance for comprehensive content
       temperature = 0.4, // Lower temperature for more consistent marketing copy
       useTools = false,
       systemPrompt
