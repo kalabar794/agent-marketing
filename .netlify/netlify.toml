@@ -3,7 +3,11 @@ redirectsOrigin = "inline"
 
 [functions]
 
+[functions."api/content/generate"]
+timeout = 900.0
+
 [functions."*"]
+node_bundler = "esbuild"
 
 [[plugins]]
 origin = "config"
@@ -13,7 +17,7 @@ package = "@netlify/plugin-nextjs"
 
 [build]
 publish = "/Users/jonathonc/Auto1111/claude/marketing-agent-v2/agentic-marketing-generator/.next"
-publishOrigin = "ui"
+publishOrigin = "config"
 commandOrigin = "config"
 command = "npm run build"
 
