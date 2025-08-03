@@ -4,8 +4,8 @@
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/api/content/generate/route": "app/api/content/generate/route.js",
   "/create/page": "app/create/page.js",
-  "/demo-backend/page": "app/demo-backend/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/demo-backend/page": "app/demo-backend/page.js",
   "/page": "app/page.js",
   "/demo/page": "app/demo/page.js",
   "/workflow/page": "app/workflow/page.js"

@@ -4,8 +4,8 @@
   "/favicon.ico/route": "/favicon.ico",
   "/api/content/generate/route": "/api/content/generate",
   "/create/page": "/create",
-  "/demo-backend/page": "/demo-backend",
   "/dashboard/page": "/dashboard",
+  "/demo-backend/page": "/demo-backend",
   "/page": "/",
   "/demo/page": "/demo",
   "/workflow/page": "/workflow"
