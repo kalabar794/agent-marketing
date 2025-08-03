@@ -20,6 +20,29 @@ export class EnhancedContentWorkflow {
   public static setInstance(id: string, instance: EnhancedContentWorkflow): void {
     this.instances.set(id, instance);
   }
+
+  public static async loadPersistedStatus(workflowId: string): Promise<any | null> {
+    try {
+      // For serverless, we'll use a simple approach with localStorage-like behavior
+      // In production, this could be Redis, DynamoDB, or other persistent storage
+      const fs = await import('fs').then(m => m.promises);
+      const path = await import('path');
+      
+      const statusFile = path.join('/tmp', `workflow-${workflowId}.json`);
+      const statusData = await fs.readFile(statusFile, 'utf-8');
+      
+      const status = JSON.parse(statusData);
+      
+      // Convert date strings back to Date objects
+      if (status.startTime) status.startTime = new Date(status.startTime);
+      if (status.endTime) status.endTime = new Date(status.endTime);
+      
+      return status;
+    } catch (error) {
+      // File not found or other error - this is expected for new workflows
+      return null;
+    }
+  }
   
   private id: string;
   private request: ContentGenerationRequest;
@@ -536,15 +559,18 @@ export class EnhancedContentWorkflow {
         agent.progress = 100;
       });
 
+      // Persist final status
+      await this.updatePersistedStatus();
+
       console.log(`✅ Background workflow ${workflowId} completed successfully`);
       
     } catch (error) {
       console.error(`❌ Background workflow ${workflowId} failed:`, error);
-      this.markAsFailed(error instanceof Error ? error.message : 'Unknown error');
+      await this.markAsFailed(error instanceof Error ? error.message : 'Unknown error');
     }
   }
 
-  public markAsFailed(errorMessage: string): void {
+  public async markAsFailed(errorMessage: string): Promise<void> {
     this.status.status = 'failed';
     this.status.error = errorMessage;
     this.status.endTime = new Date();
@@ -555,6 +581,9 @@ export class EnhancedContentWorkflow {
         agent.status = 'failed';
       }
     });
+    
+    // Persist failed status
+    await this.updatePersistedStatus();
   }
 
   public async simulateDemoWorkflow(workflowId: string): Promise<void> {
@@ -614,11 +643,14 @@ export class EnhancedContentWorkflow {
       this.status.endTime = new Date();
       this.status.progress = 100;
       
+      // Persist demo completion
+      await this.updatePersistedStatus();
+      
       console.log(`✅ Demo workflow ${workflowId} completed`);
       
     } catch (error) {
       console.error(`❌ Demo workflow ${workflowId} failed:`, error);
-      this.markAsFailed(error instanceof Error ? error.message : 'Demo workflow failed');
+      await this.markAsFailed(error instanceof Error ? error.message : 'Demo workflow failed');
     }
   }
 
@@ -681,6 +713,9 @@ The integration of ${this.request.topic} represents a significant opportunity fo
     // Update overall progress
     const totalProgress = this.status.agents.reduce((sum, agent) => sum + agent.progress, 0);
     this.status.progress = Math.round(totalProgress / this.status.agents.length);
+    
+    // Persist updated progress
+    this.updatePersistedStatus().catch(console.error);
   }
 
   // Helper methods for content assembly
@@ -743,5 +778,26 @@ The integration of ${this.request.topic} represents a significant opportunity fo
       ];
     }
     return [];
+  }
+
+  // Persistence methods for serverless environment
+  public async persistStatus(): Promise<void> {
+    try {
+      const fs = await import('fs').then(m => m.promises);
+      const path = await import('path');
+      
+      const statusFile = path.join('/tmp', `workflow-${this.id}.json`);
+      const statusData = JSON.stringify(this.status, null, 2);
+      
+      await fs.writeFile(statusFile, statusData, 'utf-8');
+      
+      console.log(`💾 Persisted workflow status for ${this.id}`);
+    } catch (error) {
+      console.error('Failed to persist workflow status:', error);
+    }
+  }
+
+  private async updatePersistedStatus(): Promise<void> {
+    await this.persistStatus();
   }
 }

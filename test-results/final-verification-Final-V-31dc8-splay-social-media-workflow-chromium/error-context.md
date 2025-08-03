@@ -1,0 +1,70 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - text: AgenticMarketing
+  - link "Home":
+    - /url: /
+  - link "Dashboard":
+    - /url: /dashboard/
+  - link "Create Content":
+    - /url: /create/
+  - link "Agent Workflow":
+    - /url: /workflow/
+- text: Live Workflow Monitoring
+- heading "Workflow in Progress" [level=1]
+- paragraph: Watch your AI agents collaborate in real-time
+- button "Pause"
+- button "Preview Result"
+- heading "Content Generation Project" [level=3]
+- text: "AI Content Generation 0% 0 of 3 agents complete ETA: 2 min Started at 8:55:37 PM Current time 08:55 PM"
+- heading "Content Generation Pipeline" [level=3]
+- paragraph: Real-time progress through the content creation workflow
+- text: 📱
+- heading "Social Media Specialist" [level=3]
+- paragraph: Social media optimization
+- text: 📊
+- heading "Performance Analyst" [level=3]
+- paragraph: Performance analysis
+- text: 👥
+- heading "Audience Analyzer" [level=3]
+- paragraph: Researching target audience
+- text: Progress 2.2775%
+- progressbar
+- heading "Stage Details & Outputs" [level=3]
+- paragraph: Detailed view of each workflow stage and its deliverables
+- text: 📱
+- heading "Social Media Specialist" [level=4]
+- text: "pending Role: Social Strategy Status: pending 📊"
+- heading "Performance Analyst" [level=4]
+- text: "pending Role: Analytics & Tracking Status: pending 👥"
+- heading "Audience Analyzer" [level=4]
+- text: "running Role: Audience Research Status: running Progress 2.2775%"
+- heading "AI Agents Status" [level=3]
+- paragraph: Current activity of each AI agent
+- text: 📱
+- heading "Social Media Specialist" [level=3]
+- paragraph: Social Strategy
+- text: Idle
+- paragraph: 0%
+- text: "Status: pending Progress: 0% 📊"
+- heading "Performance Analyst" [level=3]
+- paragraph: Analytics & Tracking
+- text: Idle
+- paragraph: 0%
+- text: "Status: pending Progress: 0% 👥"
+- heading "Audience Analyzer" [level=3]
+- paragraph: Audience Research
+- text: Working
+- paragraph: 2.2775%
+- text: "Status: running Progress: 2.2775%"
+- heading "Live Activity" [level=3]
+- paragraph: Real-time updates from AI agents
+- text: Audience Analyzer 8:55:40 PM
+- paragraph: Currently processing...
+- heading "Quick Actions" [level=3]
+- button "Export Progress Report"
+- button "Force Complete Stage"
+- button "View Final Content" [disabled]
+- alert
+```
