@@ -314,6 +314,8 @@ export class EnhancedOrchestrator {
     worker.isAvailable = false;
     worker.currentTask = task.id;
 
+    let progressInterval: NodeJS.Timeout | null = null;
+    
     try {
       console.log(`🔄 Starting ${task.id} (attempt ${task.retryCount + 1}/${task.maxRetries})`);
       
@@ -328,7 +330,7 @@ export class EnhancedOrchestrator {
       };
 
       // Execute with progress tracking AND aggressive timeout
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         if (onProgress) {
           const elapsed = Date.now() - startTime;
           const progress = Math.min((elapsed / (task.estimatedDuration * 1000)) * 100, 90);
@@ -373,7 +375,9 @@ export class EnhancedOrchestrator {
       const duration = Date.now() - startTime;
       console.error(`❌ ${task.id} failed:`, error);
 
-      clearInterval(progressInterval);
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
       task.retryCount++;
 
       // If we've exhausted retries, try to create a fallback result

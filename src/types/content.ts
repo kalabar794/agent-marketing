@@ -7,6 +7,13 @@ export interface ContentGenerationRequest {
   keywords?: string[];
   platforms?: string[];
   brandGuidelines?: string;
+  // Enhanced workflow options
+  priorityMode?: 'speed' | 'balanced' | 'quality';
+  maxExecutionTime?: number;
+  enableOptimization?: boolean;
+  maxOptimizationCycles?: number;
+  enableFallbacks?: boolean;
+  useEnhanced?: boolean;
 }
 
 export interface AgentConfig {
@@ -40,6 +47,8 @@ export interface WorkflowStatus {
   estimatedTimeRemaining?: number;
   startTime: Date;
   endTime?: Date;
+  error?: string;
+  workflowType?: string;
 }
 
 export interface GeneratedContent {
@@ -50,6 +59,7 @@ export interface GeneratedContent {
   seoKeywords: string[];
   readabilityScore: number;
   platforms: PlatformContent[];
+  metadata?: any;
 }
 
 export interface PlatformContent {
@@ -67,6 +77,9 @@ export interface QualityScores {
   overall: number; // Combined score
   evaluatedAt?: Date; // Optional evaluation timestamp
   recommendations?: string[]; // Optional recommendations
+  content?: number; // Content quality score
+  engagement?: number; // Engagement potential score
+  brand?: number; // Brand alignment score
 }
 
 export interface ContentTemplate {

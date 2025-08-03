@@ -827,7 +827,4 @@ Write content that is original, engaging, and optimized for both human readers a
     return wordCount;
   }
 
-  private estimateWordCount(text: string): number {
-    return text.split(/\s+/).length;
-  }
 }

@@ -17,13 +17,13 @@
 - button "Pause"
 - button "Preview Result"
 - heading "Content Generation Project" [level=3]
-- text: "AI Content Generation 0% 0 of 6 agents complete ETA: 3 min Started at 8:35:47 PM Current time 08:35 PM"
+- text: "AI Content Generation 0% 0 of 6 agents complete ETA: 3 min Started at 8:45:52 PM Current time 08:46 PM"
 - heading "Content Generation Pipeline" [level=3]
 - paragraph: Real-time progress through the content creation workflow
 - text: 🔍
 - heading "Market Researcher" [level=3]
 - paragraph: Analyzing market trends
-- text: Progress 3.83%
+- text: Progress 3.9405555555555556%
 - progressbar
 - text: 📋
 - heading "Content Strategist" [level=3]
@@ -31,7 +31,7 @@
 - text: 🎯
 - heading "SEO Optimizer" [level=3]
 - paragraph: Optimizing for search
-- text: Progress 7.652222222222223%
+- text: Progress 7.875555555555555%
 - progressbar
 - text: ✍️
 - heading "Content Writer" [level=3]
@@ -46,11 +46,11 @@
 - paragraph: Detailed view of each workflow stage and its deliverables
 - text: 🔍
 - heading "Market Researcher" [level=4]
-- text: "running Role: Market Analysis Status: running Progress 3.83% 📋"
+- text: "running Role: Market Analysis Status: running Progress 3.9405555555555556% 📋"
 - heading "Content Strategist" [level=4]
 - text: "pending Role: Strategy & Planning Status: pending 🎯"
 - heading "SEO Optimizer" [level=4]
-- text: "running Role: Search Optimization Status: running Progress 7.652222222222223% ✍️"
+- text: "running Role: Search Optimization Status: running Progress 7.875555555555555% ✍️"
 - heading "Content Writer" [level=4]
 - text: "pending Role: Content Creation Status: pending 📝"
 - heading "Content Editor" [level=4]
@@ -63,8 +63,8 @@
 - heading "Market Researcher" [level=3]
 - paragraph: Market Analysis
 - text: Working
-- paragraph: 3.83%
-- text: "Status: running Progress: 3.83% 📋"
+- paragraph: 3.9405555555555556%
+- text: "Status: running Progress: 3.9405555555555556% 📋"
 - heading "Content Strategist" [level=3]
 - paragraph: Strategy & Planning
 - text: Idle
@@ -73,8 +73,8 @@
 - heading "SEO Optimizer" [level=3]
 - paragraph: Search Optimization
 - text: Working
-- paragraph: 7.652222222222223%
-- text: "Status: running Progress: 7.652222222222223% ✍️"
+- paragraph: 7.875555555555555%
+- text: "Status: running Progress: 7.875555555555555% ✍️"
 - heading "Content Writer" [level=3]
 - paragraph: Content Creation
 - text: Idle
@@ -92,9 +92,9 @@
 - text: "Status: pending Progress: 0%"
 - heading "Live Activity" [level=3]
 - paragraph: Real-time updates from AI agents
-- text: Market Researcher 8:35:51 PM
+- text: Market Researcher 8:45:56 PM
 - paragraph: Currently processing...
-- text: SEO Optimizer 8:35:51 PM
+- text: SEO Optimizer 8:45:56 PM
 - paragraph: Currently processing...
 - heading "Quick Actions" [level=3]
 - button "Export Progress Report"
