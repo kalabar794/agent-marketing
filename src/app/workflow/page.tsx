@@ -146,86 +146,137 @@ function WorkflowPageContent() {
                 Meet the specialized AI agents that power our content generation system.
               </p>
               
-              {/* Agent Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {Object.entries(agentMapping).map(([id, agent]) => (
-                  <Card key={id} className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-                    <CardContent className="pt-4">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className="text-2xl">{agent.icon}</div>
-                        <div>
-                          <h3 className="font-semibold text-sm">{agent.name}</h3>
-                          <p className="text-xs text-gray-300">{agent.role}</p>
+              {/* Enhanced Agent Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {Object.entries(agentMapping).map(([id, agent], index) => {
+                  const gradients = [
+                    'from-purple-500/20 via-pink-500/15 to-red-500/10',
+                    'from-blue-500/20 via-cyan-500/15 to-teal-500/10', 
+                    'from-green-500/20 via-emerald-500/15 to-lime-500/10',
+                    'from-orange-500/20 via-yellow-500/15 to-amber-500/10',
+                    'from-indigo-500/20 via-purple-500/15 to-pink-500/10',
+                    'from-rose-500/20 via-pink-500/15 to-fuchsia-500/10',
+                    'from-cyan-500/20 via-blue-500/15 to-indigo-500/10',
+                    'from-lime-500/20 via-green-500/15 to-emerald-500/10',
+                    'from-amber-500/20 via-orange-500/15 to-red-500/10'
+                  ];
+                  const iconBg = [
+                    'from-purple-500 to-pink-500',
+                    'from-blue-500 to-cyan-500',
+                    'from-green-500 to-emerald-500', 
+                    'from-orange-500 to-yellow-500',
+                    'from-indigo-500 to-purple-500',
+                    'from-rose-500 to-pink-500',
+                    'from-cyan-500 to-blue-500',
+                    'from-lime-500 to-green-500',
+                    'from-amber-500 to-orange-500'
+                  ];
+                  const borderGlow = [
+                    'border-purple-500/30 shadow-purple-500/20',
+                    'border-blue-500/30 shadow-blue-500/20',
+                    'border-green-500/30 shadow-green-500/20',
+                    'border-orange-500/30 shadow-orange-500/20', 
+                    'border-indigo-500/30 shadow-indigo-500/20',
+                    'border-rose-500/30 shadow-rose-500/20',
+                    'border-cyan-500/30 shadow-cyan-500/20',
+                    'border-lime-500/30 shadow-lime-500/20',
+                    'border-amber-500/30 shadow-amber-500/20'
+                  ];
+                  
+                  return (
+                    <div 
+                      key={id} 
+                      className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradients[index % gradients.length]} backdrop-blur-xl border border-white/10 ${borderGlow[index % borderGlow.length]} shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2`}
+                    >
+                      {/* Animated background glow */}
+                      <div className={`absolute inset-0 bg-gradient-to-br ${gradients[index % gradients.length]} opacity-0 group-hover:opacity-50 transition-opacity duration-500`}></div>
+                      
+                      {/* Floating particles effect */}
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div className="absolute top-2 right-2 w-1 h-1 bg-white/60 rounded-full animate-twinkle"></div>
+                        <div className="absolute bottom-4 left-4 w-1 h-1 bg-white/40 rounded-full animate-twinkle-delay"></div>
+                        <div className="absolute top-1/2 left-2 w-0.5 h-0.5 bg-white/30 rounded-full animate-pulse"></div>
+                      </div>
+                      
+                      <div className="relative p-6 z-10">
+                        <div className="flex items-start space-x-4 mb-4">
+                          <div className={`p-3 rounded-xl bg-gradient-to-br ${iconBg[index % iconBg.length]} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                            <div className="text-2xl filter drop-shadow-sm">{agent.icon}</div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-base text-white mb-1 group-hover:text-yellow-300 transition-colors duration-300">{agent.name}</h3>
+                            <p className="text-sm text-white/80 font-medium">{agent.role}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          {id === 'market-researcher' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-purple-400 rounded-full mr-2"></span>Analyzes industry trends and competitive landscape</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-purple-400 rounded-full mr-2"></span>Identifies market opportunities and threats</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-purple-400 rounded-full mr-2"></span>Provides data-driven market insights</div>
+                            </div>
+                          )}
+                          {id === 'audience-analyzer' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-blue-400 rounded-full mr-2"></span>Researches target audience demographics</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-blue-400 rounded-full mr-2"></span>Analyzes user behavior and preferences</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-blue-400 rounded-full mr-2"></span>Creates detailed audience personas</div>
+                            </div>
+                          )}
+                          {id === 'content-strategist' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-green-400 rounded-full mr-2"></span>Develops comprehensive content strategies</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-green-400 rounded-full mr-2"></span>Aligns content with business objectives</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-green-400 rounded-full mr-2"></span>Plans content distribution and timing</div>
+                            </div>
+                          )}
+                          {id === 'ai-seo-optimizer' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-orange-400 rounded-full mr-2"></span>Optimizes content for search engines</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-orange-400 rounded-full mr-2"></span>Researches high-value keywords</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-orange-400 rounded-full mr-2"></span>Implements technical SEO best practices</div>
+                            </div>
+                          )}
+                          {id === 'content-writer' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-indigo-400 rounded-full mr-2"></span>Creates compelling, on-brand content</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-indigo-400 rounded-full mr-2"></span>Adapts tone and style to audience</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-indigo-400 rounded-full mr-2"></span>Ensures clear and engaging messaging</div>
+                            </div>
+                          )}
+                          {id === 'content-editor' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-rose-400 rounded-full mr-2"></span>Reviews and refines content quality</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-rose-400 rounded-full mr-2"></span>Ensures consistency and accuracy</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-rose-400 rounded-full mr-2"></span>Optimizes readability and flow</div>
+                            </div>
+                          )}
+                          {id === 'social-media-specialist' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-cyan-400 rounded-full mr-2"></span>Creates platform-specific social content</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-cyan-400 rounded-full mr-2"></span>Optimizes for engagement and reach</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-cyan-400 rounded-full mr-2"></span>Plans posting schedules and hashtags</div>
+                            </div>
+                          )}
+                          {id === 'landing-page-specialist' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-lime-400 rounded-full mr-2"></span>Designs high-converting landing pages</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-lime-400 rounded-full mr-2"></span>Optimizes user experience and CTAs</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-lime-400 rounded-full mr-2"></span>Implements conversion best practices</div>
+                            </div>
+                          )}
+                          {id === 'performance-analyst' && (
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-amber-400 rounded-full mr-2"></span>Tracks content performance metrics</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-amber-400 rounded-full mr-2"></span>Provides data-driven optimization insights</div>
+                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-amber-400 rounded-full mr-2"></span>Monitors ROI and engagement analytics</div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        {id === 'market-researcher' && (
-                          <div className="text-xs text-gray-400">
-                            • Analyzes industry trends and competitive landscape<br/>
-                            • Identifies market opportunities and threats<br/>
-                            • Provides data-driven market insights
-                          </div>
-                        )}
-                        {id === 'audience-analyzer' && (
-                          <div className="text-xs text-gray-400">
-                            • Researches target audience demographics<br/>
-                            • Analyzes user behavior and preferences<br/>
-                            • Creates detailed audience personas
-                          </div>
-                        )}
-                        {id === 'content-strategist' && (
-                          <div className="text-xs text-gray-400">
-                            • Develops comprehensive content strategies<br/>
-                            • Aligns content with business objectives<br/>
-                            • Plans content distribution and timing
-                          </div>
-                        )}
-                        {id === 'ai-seo-optimizer' && (
-                          <div className="text-xs text-gray-400">
-                            • Optimizes content for search engines<br/>
-                            • Researches high-value keywords<br/>
-                            • Implements technical SEO best practices
-                          </div>
-                        )}
-                        {id === 'content-writer' && (
-                          <div className="text-xs text-gray-400">
-                            • Creates compelling, on-brand content<br/>
-                            • Adapts tone and style to audience<br/>
-                            • Ensures clear and engaging messaging
-                          </div>
-                        )}
-                        {id === 'content-editor' && (
-                          <div className="text-xs text-gray-400">
-                            • Reviews and refines content quality<br/>
-                            • Ensures consistency and accuracy<br/>
-                            • Optimizes readability and flow
-                          </div>
-                        )}
-                        {id === 'social-media-specialist' && (
-                          <div className="text-xs text-gray-400">
-                            • Creates platform-specific social content<br/>
-                            • Optimizes for engagement and reach<br/>
-                            • Plans posting schedules and hashtags
-                          </div>
-                        )}
-                        {id === 'landing-page-specialist' && (
-                          <div className="text-xs text-gray-400">
-                            • Designs high-converting landing pages<br/>
-                            • Optimizes user experience and CTAs<br/>
-                            • Implements conversion best practices
-                          </div>
-                        )}
-                        {id === 'performance-analyst' && (
-                          <div className="text-xs text-gray-400">
-                            • Tracks content performance metrics<br/>
-                            • Provides data-driven optimization insights<br/>
-                            • Monitors ROI and engagement analytics
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
               
               <div className="space-y-3">
