@@ -75,6 +75,9 @@ export async function POST(request: NextRequest) {
     // Store workflow instance for later retrieval
     EnhancedContentWorkflow.setInstance(workflowId, enhancedWorkflow);
     
+    // Store initial status for persistence
+    await enhancedWorkflow.persistStatus();
+    
     // Trigger background processing immediately (non-blocking)
     setTimeout(async () => {
       try {
@@ -130,7 +133,7 @@ export async function GET(request: NextRequest) {
 
     console.log(`📊 Status check for workflow: ${workflowId}`);
 
-    // Try to find enhanced workflow first
+    // Try to find enhanced workflow first (in-memory)
     const enhancedWorkflow = EnhancedContentWorkflow.getInstance(workflowId);
     if (enhancedWorkflow) {
       const status = await enhancedWorkflow.getStatus();
@@ -139,6 +142,20 @@ export async function GET(request: NextRequest) {
         ...status,
         workflowType: 'enhanced-background'
       });
+    }
+
+    // Try to load from persistent storage
+    try {
+      const persistedStatus = await EnhancedContentWorkflow.loadPersistedStatus(workflowId);
+      if (persistedStatus) {
+        console.log(`📊 Loaded persisted workflow status: ${persistedStatus.status}, progress: ${persistedStatus.progress}%`);
+        return NextResponse.json({
+          ...persistedStatus,
+          workflowType: 'enhanced-background'
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load persisted status:', error);
     }
 
     // Check if API key is configured (demo mode fallback)
