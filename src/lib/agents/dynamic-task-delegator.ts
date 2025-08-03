@@ -357,7 +357,7 @@ export class DynamicTaskDelegator {
       adapted.qualityThresholds['market-research'] = Math.min(0.95, (adapted.qualityThresholds['market-research'] || 0.8) * 1.1);
     }
 
-    if (request.goals.some(goal => goal.toLowerCase().includes('seo'))) {
+    if (request.goals && request.goals.toLowerCase().includes('seo')) {
       adapted.priorityModifiers['seo-optimization'] = (adapted.priorityModifiers['seo-optimization'] || 1) * 1.3;
       adapted.qualityThresholds['seo-optimization'] = Math.min(0.95, (adapted.qualityThresholds['seo-optimization'] || 0.8) * 1.1);
     }
