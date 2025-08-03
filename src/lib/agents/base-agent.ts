@@ -30,7 +30,7 @@ export abstract class BaseAgent {
     }
 
     const {
-      model = 'claude-3-5-sonnet-20241022', // Use actual Claude 3.5 Sonnet model
+      model = 'claude-3-5-sonnet-20250114', // Use Claude 3.5 Sonnet v2 (latest)
       maxTokens = Math.min(this.maxOutputTokens, 800), // Limit to 800 tokens for focused content
       temperature = 0.4, // Lower temperature for more consistent marketing copy
       useTools = false,
