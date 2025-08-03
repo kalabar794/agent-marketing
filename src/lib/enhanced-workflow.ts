@@ -224,6 +224,31 @@ export class EnhancedContentWorkflow {
     }
   }
 
+  private async assembleFinalContent(agentResults: Map<string, any>): Promise<any> {
+    const completedOutputs = Object.fromEntries(agentResults);
+    
+    // Use enhanced content generation logic
+    const content = {
+      id: `enhanced-content-${this.id}`,
+      title: this.extractTitle(completedOutputs),
+      content: this.extractMainContent(completedOutputs),
+      summary: this.extractSummary(completedOutputs),
+      seoKeywords: this.extractSEOKeywords(completedOutputs),
+      readabilityScore: this.calculateReadabilityScore(completedOutputs),
+      platforms: this.generatePlatformContent(completedOutputs),
+      metadata: {
+        contentType: this.request.contentType,
+        generationMethod: 'enhanced-background-workflow',
+        totalAgents: agentResults.size,
+        executionTime: Date.now() - this.status.startTime.getTime(),
+        qualityMode: this.options.priorityMode || 'balanced'
+      }
+    };
+
+    console.log(`📝 Assembled final content: ${content.title}`);
+    return content;
+  }
+
   private async generateFinalContent(agentResults: Map<string, any>): Promise<void> {
     const completedOutputs = Object.fromEntries(agentResults);
 
