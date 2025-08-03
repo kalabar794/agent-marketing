@@ -1,8 +1,14 @@
 {
   "version": 1,
   "functions": {
+    "/api/status/stream": {
+      "maxDuration": 60
+    },
     "/api/content/generate": {
       "maxDuration": 300
+    },
+    "/api/status": {
+      "maxDuration": 30
     }
   }
 }

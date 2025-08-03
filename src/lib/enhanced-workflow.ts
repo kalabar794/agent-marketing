@@ -3,7 +3,7 @@ import { EnhancedOrchestrator } from './agents/enhanced-orchestrator';
 import { EvaluatorOptimizer } from './quality/evaluator-optimizer';
 import { DynamicTaskDelegator } from './agents/dynamic-task-delegator';
 import { ErrorRecoveryManager } from './resilience/error-recovery';
-import { ContentStorage } from './storage/content';
+import { NetlifyBlobsStorage } from './storage/netlify-blobs-storage';
 
 interface EnhancedWorkflowOptions {
   priorityMode?: 'speed' | 'balanced' | 'quality';
@@ -21,10 +21,33 @@ export class EnhancedContentWorkflow {
     this.instances.set(id, instance);
   }
 
+  // Static storage to persist across function calls (limited but better than /tmp)
+  private static completedWorkflows = new Map<string, any>();
+
   public static async loadPersistedStatus(workflowId: string): Promise<any | null> {
     try {
-      // For serverless, we'll use a simple approach with localStorage-like behavior
-      // In production, this could be Redis, DynamoDB, or other persistent storage
+      // First try in-memory storage
+      if (this.completedWorkflows.has(workflowId)) {
+        const status = this.completedWorkflows.get(workflowId);
+        console.log(`📊 Found completed workflow in memory: ${workflowId}`);
+        return status;
+      }
+
+      // Try Netlify Blobs storage
+      try {
+        const storage = new (await import('./storage/netlify-blobs-storage')).NetlifyBlobsStorage();
+        const status = await storage.getWorkflowStatus(workflowId);
+        if (status) {
+          console.log(`📊 Found completed workflow in Netlify Blobs: ${workflowId}`);
+          // Cache in memory for faster access
+          this.completedWorkflows.set(workflowId, status);
+          return status;
+        }
+      } catch (blobError) {
+        console.warn(`Failed to load from Netlify Blobs: ${blobError}`);
+      }
+
+      // Fallback to file system (keeping original logic for compatibility)
       const fs = await import('fs').then(m => m.promises);
       const path = await import('path');
       
@@ -37,9 +60,13 @@ export class EnhancedContentWorkflow {
       if (status.startTime) status.startTime = new Date(status.startTime);
       if (status.endTime) status.endTime = new Date(status.endTime);
       
+      // Cache in memory for faster access
+      this.completedWorkflows.set(workflowId, status);
+      
       return status;
     } catch (error) {
       // File not found or other error - this is expected for new workflows
+      console.log(`📊 No persisted status found for workflow: ${workflowId}`);
       return null;
     }
   }
@@ -53,7 +80,7 @@ export class EnhancedContentWorkflow {
   private evaluator: EvaluatorOptimizer;
   private delegator: DynamicTaskDelegator;
   private errorRecovery: ErrorRecoveryManager;
-  private storage: ContentStorage;
+  private storage: NetlifyBlobsStorage;
   
   private executionStartTime: Date;
   private progressCallback?: (agentId: string, progress: number) => void;
@@ -73,7 +100,7 @@ export class EnhancedContentWorkflow {
     this.evaluator = new EvaluatorOptimizer();
     this.delegator = new DynamicTaskDelegator();
     this.errorRecovery = new ErrorRecoveryManager();
-    this.storage = new ContentStorage();
+    this.storage = new NetlifyBlobsStorage();
     
     this.executionStartTime = new Date();
     
@@ -206,6 +233,10 @@ export class EnhancedContentWorkflow {
       this.status.endTime = new Date();
       this.status.progress = 100;
 
+      // Persist the completed status immediately to Netlify Blobs
+      await this.storage.saveWorkflowStatus(this.id, this.status);
+      await this.updatePersistedStatus();
+
       const duration = this.status.endTime.getTime() - this.status.startTime.getTime();
       console.log(`🎉 Enhanced workflow completed in ${Math.round(duration / 1000)}s`);
 
@@ -264,12 +295,39 @@ export class EnhancedContentWorkflow {
   private async assembleFinalContent(agentResults: Map<string, any>): Promise<any> {
     const completedOutputs = Object.fromEntries(agentResults);
     
+    // Debug: Log agent output structure
+    console.log('🔍 DEBUG: Agent outputs structure:');
+    Object.keys(completedOutputs).forEach(agentId => {
+      const output = completedOutputs[agentId];
+      console.log(`  ${agentId}:`, {
+        hasTitle: !!output?.title,
+        hasContentTitle: !!output?.content?.title,
+        hasIntroduction: !!output?.introduction,
+        hasContentIntroduction: !!output?.content?.introduction,
+        hasSections: !!output?.sections,
+        hasMainContent: !!output?.content?.mainContent,
+        hasConclusion: !!output?.conclusion,
+        hasContentConclusion: !!output?.content?.conclusion,
+        structure: Object.keys(output || {})
+      });
+    });
+    
     // Use enhanced content generation logic
+    const extractedTitle = this.extractTitle(completedOutputs);
+    const extractedContent = this.extractMainContent(completedOutputs);
+    const extractedSummary = this.extractSummary(completedOutputs);
+    
+    console.log('🔍 DEBUG: Extracted values:', {
+      title: extractedTitle,
+      contentLength: extractedContent?.length || 0,
+      summaryLength: extractedSummary?.length || 0
+    });
+    
     const content = {
       id: `enhanced-content-${this.id}`,
-      title: this.extractTitle(completedOutputs),
-      content: this.extractMainContent(completedOutputs),
-      summary: this.extractSummary(completedOutputs),
+      title: extractedTitle,
+      content: extractedContent,
+      summary: extractedSummary,
       seoKeywords: this.extractSEOKeywords(completedOutputs),
       readabilityScore: this.calculateReadabilityScore(completedOutputs),
       platforms: this.generatePlatformContent(completedOutputs),
@@ -387,15 +445,47 @@ export class EnhancedContentWorkflow {
     }
   }
 
-  // Content extraction helpers
-  private extractTitle(outputs: any): string {
-    return outputs['content-strategist']?.outline?.title ||
-           outputs['content-writer']?.content?.title ||
-           `${this.request.contentType} about ${this.request.topic}`;
+  // Content extraction helpers (duplicated below for legacy support)
+  private extractTitleLegacy(outputs: any): string {
+    // Handle new simplified format from ContentWriter
+    if (outputs['content-writer']?.title) {
+      return outputs['content-writer'].title;
+    }
+    // Handle ContentStrategist output
+    if (outputs['content-strategist']?.outline?.title) {
+      return outputs['content-strategist'].outline.title;
+    }
+    // Handle full ContentWriterOutput format (fallback)
+    if (outputs['content-writer']?.content?.title) {
+      return outputs['content-writer'].content.title;
+    }
+    return `${this.request.contentType} about ${this.request.topic}`;
   }
 
-  private extractMainContent(outputs: any): string {
+  private extractMainContentLegacy(outputs: any): string {
     const writer = outputs['content-writer'];
+    
+    // Handle new simplified format from ContentWriter
+    if (writer?.introduction && writer?.sections) {
+      let content = writer.introduction + '\n\n';
+      
+      if (writer.sections && Array.isArray(writer.sections)) {
+        writer.sections.forEach((section: any) => {
+          content += `\n\n## ${section.heading}\n\n`;
+          if (section.content) {
+            content += section.content + '\n\n';
+          }
+        });
+      }
+      
+      if (writer.conclusion) {
+        content += `\n\n## Conclusion\n\n${writer.conclusion}`;
+      }
+      
+      return content;
+    }
+    
+    // Handle full ContentWriterOutput format (fallback)
     if (writer?.content) {
       let content = writer.content.introduction || '';
       
@@ -418,22 +508,44 @@ export class EnhancedContentWorkflow {
     return `Content about ${this.request.topic}`;
   }
 
-  private extractSummary(outputs: any): string {
-    return outputs['content-strategist']?.strategy?.summary ||
-           outputs['content-writer']?.content?.introduction?.substring(0, 200) + '...' ||
-           `Summary of ${this.request.topic}`;
+  private extractSummaryLegacy(outputs: any): string {
+    // Handle ContentWriter simplified format
+    if (outputs['content-writer']?.introduction) {
+      return outputs['content-writer'].introduction.substring(0, 200) + '...';
+    }
+    // Handle ContentStrategist output
+    if (outputs['content-strategist']?.strategy?.summary) {
+      return outputs['content-strategist'].strategy.summary;
+    }
+    // Handle full ContentWriter format (fallback)
+    if (outputs['content-writer']?.content?.introduction) {
+      return outputs['content-writer'].content.introduction.substring(0, 200) + '...';
+    }
+    return `Summary of ${this.request.topic}`;
   }
 
-  private extractSEOKeywords(outputs: any): string[] {
-    return outputs['ai-seo-optimizer']?.keywordStrategy?.primaryKeywords?.map((k: any) => k.keyword) ||
-           outputs['ai-seo-optimizer']?.keywords ||
-           [this.request.topic];
+  private extractSEOKeywordsLegacy(outputs: any): string[] {
+    // Handle SEO Optimizer output
+    if (outputs['ai-seo-optimizer']?.keywordStrategy?.primaryKeywords) {
+      return outputs['ai-seo-optimizer'].keywordStrategy.primaryKeywords.map((k: any) => k.keyword);
+    }
+    // Handle simplified format
+    if (outputs['ai-seo-optimizer']?.keywords) {
+      return outputs['ai-seo-optimizer'].keywords;
+    }
+    return [this.request.topic];
   }
 
-  private calculateReadabilityScore(outputs: any): number {
-    return outputs['content-writer']?.metadata?.readabilityScore ||
-           outputs['content-editor']?.readabilityScore ||
-           75;
+  private calculateReadabilityScoreLegacy(outputs: any): number {
+    // Handle ContentWriter metadata
+    if (outputs['content-writer']?.metadata?.readabilityScore) {
+      return outputs['content-writer'].metadata.readabilityScore;
+    }
+    // Handle ContentEditor output
+    if (outputs['content-editor']?.readabilityScore) {
+      return outputs['content-editor'].readabilityScore;
+    }
+    return 75;
   }
 
   private generatePlatformContent(outputs: any): any[] {
@@ -587,7 +699,8 @@ export class EnhancedContentWorkflow {
         agent.progress = 100;
       });
 
-      // Persist final status
+      // Persist final status to Netlify Blobs
+      await this.storage.saveWorkflowStatus(this.id, this.status);
       await this.updatePersistedStatus();
 
       console.log(`✅ Background workflow ${workflowId} completed successfully`);
@@ -610,7 +723,8 @@ export class EnhancedContentWorkflow {
       }
     });
     
-    // Persist failed status
+    // Persist failed status to Netlify Blobs
+    await this.storage.saveWorkflowStatus(this.id, this.status);
     await this.updatePersistedStatus();
   }
 
@@ -671,7 +785,8 @@ export class EnhancedContentWorkflow {
       this.status.endTime = new Date();
       this.status.progress = 100;
       
-      // Persist demo completion
+      // Persist demo completion to Netlify Blobs
+      await this.storage.saveWorkflowStatus(this.id, this.status);
       await this.updatePersistedStatus();
       
       console.log(`✅ Demo workflow ${workflowId} completed`);
@@ -748,9 +863,15 @@ The integration of ${this.request.topic} represents a significant opportunity fo
 
   // Helper methods for content assembly
   private extractTitle(outputs: any): string {
+    // Handle new simplified format from ContentWriter
+    if (outputs['content-writer']?.title) {
+      return outputs['content-writer'].title;
+    }
+    // Handle full ContentWriterOutput format (fallback)
     if (outputs['content-writer']?.content?.title) {
       return outputs['content-writer'].content.title;
     }
+    // Handle ContentStrategist output
     if (outputs['content-strategist']?.outline?.title) {
       return outputs['content-strategist'].outline.title;
     }
@@ -758,39 +879,89 @@ The integration of ${this.request.topic} represents a significant opportunity fo
   }
 
   private extractMainContent(outputs: any): string {
-    if (outputs['content-writer']?.content?.mainContent) {
-      const sections = outputs['content-writer'].content.mainContent;
-      return sections.map((section: any) => {
-        let content = `## ${section.heading}\n\n`;
+    const writer = outputs['content-writer'];
+    
+    // Handle new simplified format from ContentWriter
+    if (writer?.introduction && writer?.sections) {
+      let content = writer.introduction + '\n\n';
+      
+      if (writer.sections && Array.isArray(writer.sections)) {
+        writer.sections.forEach((section: any) => {
+          content += `\n\n## ${section.heading}\n\n`;
+          if (section.content) {
+            content += section.content + '\n\n';
+          }
+        });
+      }
+      
+      if (writer.conclusion) {
+        content += `\n\n## Conclusion\n\n${writer.conclusion}`;
+      }
+      
+      return content;
+    }
+    
+    // Handle full ContentWriterOutput format (fallback)
+    if (writer?.content?.mainContent) {
+      const sections = writer.content.mainContent;
+      let content = writer.content.introduction || '';
+      
+      sections.forEach((section: any) => {
+        content += `\n\n## ${section.heading}\n\n`;
         if (section.paragraphs) {
           content += section.paragraphs.join('\n\n') + '\n\n';
         }
         if (section.bulletPoints && section.bulletPoints.length > 0) {
           content += section.bulletPoints.map((point: string) => `- ${point}`).join('\n') + '\n\n';
         }
-        return content;
-      }).join('');
+      });
+      
+      if (writer.content.conclusion) {
+        content += `\n\n## Conclusion\n\n${writer.content.conclusion}`;
+      }
+      
+      return content;
     }
+    
     return `# ${this.request.topic}\n\nComprehensive content about ${this.request.topic} for ${this.request.audience}.`;
   }
 
   private extractSummary(outputs: any): string {
+    // Handle ContentWriter simplified format
+    if (outputs['content-writer']?.introduction) {
+      return outputs['content-writer'].introduction.substring(0, 200) + '...';
+    }
+    // Handle ContentStrategist output
     if (outputs['content-strategist']?.strategy?.valueProposition) {
       return outputs['content-strategist'].strategy.valueProposition;
+    }
+    // Handle full ContentWriter format (fallback)
+    if (outputs['content-writer']?.content?.introduction) {
+      return outputs['content-writer'].content.introduction.substring(0, 200) + '...';
     }
     return `Complete guide to ${this.request.topic} for ${this.request.audience}`;
   }
 
   private extractSEOKeywords(outputs: any): string[] {
+    // Handle SEO Optimizer output
     if (outputs['ai-seo-optimizer']?.keywordStrategy?.primaryKeywords) {
       return outputs['ai-seo-optimizer'].keywordStrategy.primaryKeywords.map((k: any) => k.keyword || k);
+    }
+    // Handle simplified format
+    if (outputs['ai-seo-optimizer']?.keywords) {
+      return outputs['ai-seo-optimizer'].keywords;
     }
     return [this.request.topic.toLowerCase(), 'best practices', 'guide'];
   }
 
   private calculateReadabilityScore(outputs: any): number {
+    // Handle ContentEditor output
     if (outputs['content-editor']?.readabilityScore) {
       return outputs['content-editor'].readabilityScore;
+    }
+    // Handle ContentWriter metadata
+    if (outputs['content-writer']?.metadata?.readabilityScore) {
+      return outputs['content-writer'].metadata.readabilityScore;
     }
     return 78; // Default readable score
   }
@@ -811,6 +982,13 @@ The integration of ${this.request.topic} represents a significant opportunity fo
   // Persistence methods for serverless environment
   public async persistStatus(): Promise<void> {
     try {
+      // Always save to in-memory storage for quick access
+      EnhancedContentWorkflow.completedWorkflows.set(this.id, { ...this.status });
+      
+      // Save to Netlify Blobs for persistent storage
+      await this.storage.saveWorkflowStatus(this.id, this.status);
+      
+      // Also save to file system as backup (though it may not persist in serverless)
       const fs = await import('fs').then(m => m.promises);
       const path = await import('path');
       
@@ -819,9 +997,10 @@ The integration of ${this.request.topic} represents a significant opportunity fo
       
       await fs.writeFile(statusFile, statusData, 'utf-8');
       
-      console.log(`💾 Persisted workflow status for ${this.id}`);
+      console.log(`💾 Persisted workflow status for ${this.id} (memory + Netlify Blobs + file)`);
     } catch (error) {
       console.error('Failed to persist workflow status:', error);
+      // Even if persistence fails, in-memory persistence should work
     }
   }
 

@@ -61,15 +61,38 @@ function WorkflowPageContent() {
 
     const fetchWorkflowStatus = async () => {
       try {
+        console.log(`Fetching status for workflow: ${workflowId}`);
         const response = await fetch(`/api/content/generate?workflowId=${workflowId}`);
+        
         if (!response.ok) {
-          throw new Error('Failed to fetch workflow status');
+          console.error(`API responded with status: ${response.status}`);
+          
+          if (response.status === 404) {
+            // Check if this is an old workflow by parsing the timestamp
+            const timestampMatch = workflowId.match(/(\d+)/);
+            if (timestampMatch) {
+              const workflowTime = parseInt(timestampMatch[1]);
+              const now = Date.now();
+              const ageInMinutes = (now - workflowTime) / (1000 * 60);
+              
+              if (ageInMinutes > 30) {
+                throw new Error(`Workflow expired. This workflow was created ${Math.round(ageInMinutes)} minutes ago and is no longer available.`);
+              }
+            }
+            throw new Error('Workflow not found. It may have expired or never existed.');
+          }
+          
+          const errorText = await response.text();
+          throw new Error(`API Error (${response.status}): ${errorText}`);
         }
+        
         const status = await response.json();
+        console.log('Received workflow status:', status);
         setWorkflowStatus(status);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        console.error('Workflow fetch error:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error occurred while fetching workflow status');
       } finally {
         setIsLoading(false);
       }
@@ -294,16 +317,43 @@ function WorkflowPageContent() {
             </>
           ) : (
             <>
-              <p className="text-gray-300 mb-6">{error || 'Workflow not found'}</p>
-              <div className="space-y-3">
-                <Button onClick={() => window.history.back()} className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                  Go Back
-                </Button>
-                <Link href="/create">
-                  <Button variant="outline" className="w-full text-white border-white/30 hover:bg-white/10">
-                    Start New Content Generation
+              <div className="max-w-2xl mx-auto">
+                <p className="text-gray-300 mb-4 text-lg">{error || 'Workflow not found'}</p>
+                
+                {error?.includes('expired') && (
+                  <div className="bg-yellow-900/30 border border-yellow-600/50 rounded-lg p-4 mb-6 text-yellow-200">
+                    <h3 className="font-semibold mb-2">⏰ Workflow Expired</h3>
+                    <p className="text-sm">
+                      Workflows are automatically cleaned up after 30 minutes to preserve server resources. 
+                      Your content may still be available if it was generated successfully.
+                    </p>
+                  </div>
+                )}
+                
+                {error?.includes('not found') && !error?.includes('expired') && (
+                  <div className="bg-red-900/30 border border-red-600/50 rounded-lg p-4 mb-6 text-red-200">
+                    <h3 className="font-semibold mb-2">🚫 Workflow Not Found</h3>
+                    <p className="text-sm">
+                      This workflow doesn't exist or may have been removed. Please check the URL or start a new content generation.
+                    </p>
+                  </div>
+                )}
+                
+                <div className="space-y-3">
+                  <Button onClick={() => window.history.back()} className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all duration-200">
+                    Go Back
                   </Button>
-                </Link>
+                  <Link href="/create">
+                    <Button variant="outline" className="w-full text-white border-white/30 hover:bg-white/10 transition-all duration-200">
+                      Start New Content Generation
+                    </Button>
+                  </Link>
+                  <Link href="/dashboard">
+                    <Button variant="ghost" className="w-full text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200">
+                      View Dashboard
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </>
           )}
@@ -346,7 +396,7 @@ function WorkflowPageContent() {
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-pink-400/20 rounded-full blur-lg animate-float-delay-2"></div>
       </section>
       
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-20">
         {/* Project Info */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
@@ -493,14 +543,22 @@ function WorkflowPageContent() {
                         <div className="mt-3">
                           <div className="flex justify-between text-xs text-muted-foreground mb-1">
                             <span>Progress</span>
-                            <span>{agent.progress}%</span>
+                            <span>{Math.round(agent.progress || 0)}%</span>
                           </div>
                           <div className="h-2 bg-muted rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-primary rounded-full transition-all duration-500"
-                              style={{ width: `${agent.progress}%` }}
+                              style={{ width: `${Math.max(5, agent.progress || 0)}%` }}
                             />
                           </div>
+                          {(agent.progress || 0) < 10 && (
+                            <div className="mt-2 p-2 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-300">
+                              <span className="flex items-center">
+                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
+                                Initializing AI processing... This may take 30-60 seconds
+                              </span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -508,6 +566,94 @@ function WorkflowPageContent() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Generated Content Display */}
+            {workflowStatus.status === 'completed' && workflowStatus.content && (
+              <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20" data-content-section>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    <span>Generated Content</span>
+                  </CardTitle>
+                  <CardDescription>
+                    AI-generated content ready for review and use
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Content Title */}
+                    {workflowStatus.content.title && (
+                      <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                        <h3 className="text-lg font-semibold text-green-400 mb-2">📝 Title</h3>
+                        <p className="text-foreground">{workflowStatus.content.title}</p>
+                      </div>
+                    )}
+
+                    {/* Main Content */}
+                    {workflowStatus.content.content && (
+                      <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                        <h3 className="text-lg font-semibold text-blue-400 mb-2">📄 Main Content</h3>
+                        <div className="text-foreground whitespace-pre-wrap max-h-96 overflow-y-auto">
+                          {workflowStatus.content.content}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Summary */}
+                    {workflowStatus.content.summary && (
+                      <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                        <h3 className="text-lg font-semibold text-purple-400 mb-2">📋 Summary</h3>
+                        <p className="text-foreground">{workflowStatus.content.summary}</p>
+                      </div>
+                    )}
+
+                    {/* SEO Keywords */}
+                    {workflowStatus.content.seoKeywords && workflowStatus.content.seoKeywords.length > 0 && (
+                      <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                        <h3 className="text-lg font-semibold text-orange-400 mb-2">🔍 SEO Keywords</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {workflowStatus.content.seoKeywords.map((keyword: string, index: number) => (
+                            <span key={index} className="px-3 py-1 bg-orange-500/20 text-orange-300 rounded-full text-sm">
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Platform Content */}
+                    {workflowStatus.content.platforms && Object.keys(workflowStatus.content.platforms).length > 0 && (
+                      <div className="p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                        <h3 className="text-lg font-semibold text-cyan-400 mb-2">🌐 Platform Adaptations</h3>
+                        <div className="space-y-3">
+                          {Object.entries(workflowStatus.content.platforms).map(([platform, content]: [string, any]) => (
+                            <div key={platform} className="bg-cyan-500/5 p-3 rounded">
+                              <h4 className="font-medium text-cyan-300 capitalize mb-1">{platform}</h4>
+                              <p className="text-foreground text-sm">{typeof content === 'string' ? content : JSON.stringify(content, null, 2)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Quality Scores */}
+                    {workflowStatus.qualityScores && (
+                      <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                        <h3 className="text-lg font-semibold text-yellow-400 mb-2">⭐ Quality Scores</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {Object.entries(workflowStatus.qualityScores).map(([metric, score]: [string, any]) => (
+                            <div key={metric} className="text-center">
+                              <div className="text-lg font-bold text-yellow-300">{Math.round((score as number) * 100)}%</div>
+                              <div className="text-xs text-yellow-400 capitalize">{metric.replace(/([A-Z])/g, ' $1').trim()}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -593,7 +739,16 @@ function WorkflowPageContent() {
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   Force Complete Stage
                 </Button>
-                <Button className="w-full justify-start bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold" disabled>
+                <Button 
+                  className="w-full justify-start bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold" 
+                  disabled={workflowStatus.status !== 'completed' || !workflowStatus.content}
+                  onClick={() => {
+                    const contentSection = document.querySelector('[data-content-section]');
+                    if (contentSection) {
+                      contentSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                >
                   <ArrowRight className="w-4 h-4 mr-2" />
                   View Final Content
                 </Button>
