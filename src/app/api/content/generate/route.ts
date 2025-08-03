@@ -3,6 +3,11 @@ import { ContentGenerationRequest, AgentResponse, WorkflowStatus } from '@/types
 import { ContentWorkflow } from '@/lib/workflow';
 import { EnhancedContentWorkflow } from '@/lib/enhanced-workflow';
 
+// Enable Netlify Background Functions (15-minute timeout instead of 10 seconds)
+export const config = {
+  type: 'experimental-background',
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body: ContentGenerationRequest = await request.json();
@@ -15,18 +20,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate workflow ID immediately
+    const workflowId = `enhanced-workflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
     // Check if API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
       console.log('🎭 Using Demo Mode - ANTHROPIC_API_KEY not configured');
       
-      // Generate a demo workflow ID
-      const demoWorkflowId = `demo-workflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // For demo mode, simulate background processing
+      setTimeout(async () => {
+        try {
+          const enhancedWorkflow = new EnhancedContentWorkflow(body, { demoMode: true });
+          await enhancedWorkflow.simulateDemoWorkflow(workflowId);
+        } catch (error) {
+          console.error('Demo workflow simulation failed:', error);
+        }
+      }, 100);
       
       return NextResponse.json({
-        workflowId: demoWorkflowId,
+        workflowId,
         status: 'started',
         workflowType: 'demo',
-        estimatedTime: 1, // 1 minute demo
+        estimatedTime: 60, // 1 minute demo
         agents: [
           { agentId: 'market-researcher', status: 'pending', progress: 0 },
           { agentId: 'content-strategist', status: 'pending', progress: 0 },
@@ -42,57 +57,57 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Check for enhanced workflow flag or use enhanced by default
-    const useEnhanced = body.useEnhanced !== false; // Default to enhanced
+    // Extract workflow options from request
+    const options = {
+      priorityMode: (body.priorityMode as 'speed' | 'balanced' | 'quality') || 'balanced',
+      maxExecutionTime: body.maxExecutionTime || 900, // 15 minutes default  
+      enableOptimization: body.enableOptimization !== false,
+      maxOptimizationCycles: body.maxOptimizationCycles || 2,
+      enableFallbacks: body.enableFallbacks !== false
+    };
     
-    if (useEnhanced) {
-      console.log('🚀 Using Enhanced Content Workflow');
-      
-      // Extract workflow options from request
-      const options = {
-        priorityMode: (body.priorityMode as 'speed' | 'balanced' | 'quality') || 'balanced',
-        maxExecutionTime: body.maxExecutionTime || 900, // 15 minutes default
-        enableOptimization: body.enableOptimization !== false,
-        maxOptimizationCycles: body.maxOptimizationCycles || 2,
-        enableFallbacks: body.enableFallbacks !== false
-      };
-      
-      // Create enhanced workflow instance
-      const enhancedWorkflow = new EnhancedContentWorkflow(body, options);
-      
-      // Start the enhanced content generation workflow
-      const workflowId = await enhancedWorkflow.start();
-      
-      const status = await enhancedWorkflow.getStatus();
-      
-      return NextResponse.json({
-        workflowId,
-        status: 'started',
-        workflowType: 'enhanced',
-        estimatedTime: status.estimatedTimeRemaining,
-        agents: status.agents,
-        options: options
-      });
-    } else {
-      console.log('📝 Using Legacy Content Workflow');
-      
-      // Create legacy workflow instance
-      const workflow = new ContentWorkflow(body);
-      
-      // Start the legacy content generation workflow
-      const workflowId = await workflow.start();
-      
-      return NextResponse.json({
-        workflowId,
-        status: 'started',
-        workflowType: 'legacy',
-        estimatedTime: workflow.getEstimatedTime(),
-        agents: workflow.getAgentPipeline()
-      });
-    }
+    console.log('🚀 Starting Background Content Workflow');
+    
+    // Create enhanced workflow instance
+    const enhancedWorkflow = new EnhancedContentWorkflow(body, options);
+    
+    // Store workflow instance for later retrieval
+    EnhancedContentWorkflow.setInstance(workflowId, enhancedWorkflow);
+    
+    // Trigger background processing immediately (non-blocking)
+    setTimeout(async () => {
+      try {
+        console.log(`🔄 Starting background processing for workflow ${workflowId}`);
+        await enhancedWorkflow.executeWorkflowInBackground(workflowId);
+        console.log(`✅ Background processing completed for workflow ${workflowId}`);
+      } catch (error) {
+        console.error(`❌ Background processing failed for workflow ${workflowId}:`, error);
+        enhancedWorkflow.markAsFailed(error instanceof Error ? error.message : 'Unknown error');
+      }
+    }, 100); // Start immediately but asynchronously
+    
+    // Return 202 Accepted immediately (standard background function pattern)
+    return NextResponse.json({
+      workflowId,
+      status: 'started',
+      workflowType: 'enhanced-background',
+      estimatedTime: options.maxExecutionTime / 60, // Convert to minutes
+      agents: [
+        { agentId: 'market-researcher', status: 'pending', progress: 0 },
+        { agentId: 'audience-analyzer', status: 'pending', progress: 0 },
+        { agentId: 'ai-seo-optimizer', status: 'pending', progress: 0 },
+        { agentId: 'content-strategist', status: 'pending', progress: 0 },
+        { agentId: 'content-writer', status: 'pending', progress: 0 },
+        { agentId: 'content-editor', status: 'pending', progress: 0 },
+        { agentId: 'social-media-specialist', status: 'pending', progress: 0 },
+        { agentId: 'landing-page-specialist', status: 'pending', progress: 0 },
+        { agentId: 'performance-analyst', status: 'pending', progress: 0 }
+      ],
+      options: options
+    }, { status: 202 }); // 202 Accepted for background processing
 
   } catch (error) {
-    console.error('Content generation error:', error);
+    console.error('Content generation startup error:', error);
     return NextResponse.json(
       { error: 'Failed to start content generation' },
       { status: 500 }
@@ -112,12 +127,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if API key is configured
+    console.log(`📊 Status check for workflow: ${workflowId}`);
+
+    // Try to find enhanced workflow first
+    const enhancedWorkflow = EnhancedContentWorkflow.getInstance(workflowId);
+    if (enhancedWorkflow) {
+      const status = await enhancedWorkflow.getStatus();
+      console.log(`📊 Enhanced workflow status: ${status.status}, progress: ${status.progress}%`);
+      return NextResponse.json({
+        ...status,
+        workflowType: 'enhanced-background'
+      });
+    }
+
+    // Check if API key is configured (demo mode fallback)
     if (!process.env.ANTHROPIC_API_KEY) {
-      console.error('ANTHROPIC_API_KEY not configured in production');
+      console.log('🎭 No API key - returning demo content');
       return NextResponse.json({
         id: workflowId,
-        status: 'demo',
+        status: 'completed',
         progress: 100,
         workflowType: 'demo',
         agents: [
@@ -127,7 +155,7 @@ export async function GET(request: NextRequest) {
           { agentId: 'ai-seo-optimizer', status: 'completed', progress: 100 },
           { agentId: 'content-editor', status: 'completed', progress: 100 }
         ],
-        startTime: new Date(),
+        startTime: new Date(Date.now() - 60000), // 1 minute ago
         endTime: new Date(),
         estimatedTimeRemaining: 0,
         content: {
@@ -162,7 +190,7 @@ The integration of AI in marketing represents a paradigm shift that forward-thin
             contentType: 'blog',
             generationMethod: 'demo-mode',
             totalAgents: 5,
-            executionTime: 0,
+            executionTime: 60000,
             qualityMode: 'demo'
           }
         },
@@ -176,16 +204,6 @@ The integration of AI in marketing represents a paradigm shift that forward-thin
       });
     }
 
-    // Try to find enhanced workflow first
-    const enhancedWorkflow = EnhancedContentWorkflow.getInstance(workflowId);
-    if (enhancedWorkflow) {
-      const status = await enhancedWorkflow.getStatus();
-      return NextResponse.json({
-        ...status,
-        workflowType: 'enhanced'
-      });
-    }
-
     // Fall back to legacy workflow
     const legacyWorkflow = ContentWorkflow.getInstance(workflowId);
     if (legacyWorkflow) {
@@ -196,6 +214,40 @@ The integration of AI in marketing represents a paradigm shift that forward-thin
       });
     }
 
+    // If workflow not found, return a 'running' status for recent workflows
+    // This handles the case where background processing might not have initialized yet
+    const workflowTimestamp = workflowId.match(/(\d+)/)?.[1];
+    if (workflowTimestamp) {
+      const workflowTime = parseInt(workflowTimestamp);
+      const now = Date.now();
+      const age = now - workflowTime;
+      
+      // If workflow is less than 30 seconds old, assume it's still initializing
+      if (age < 30000) {
+        console.log(`⏳ Workflow ${workflowId} is initializing...`);
+        return NextResponse.json({
+          id: workflowId,
+          status: 'running',
+          progress: 5,
+          workflowType: 'enhanced-background',
+          agents: [
+            { agentId: 'market-researcher', status: 'pending', progress: 0 },
+            { agentId: 'audience-analyzer', status: 'pending', progress: 0 },
+            { agentId: 'ai-seo-optimizer', status: 'pending', progress: 0 },
+            { agentId: 'content-strategist', status: 'pending', progress: 0 },
+            { agentId: 'content-writer', status: 'pending', progress: 0 },
+            { agentId: 'content-editor', status: 'pending', progress: 0 },
+            { agentId: 'social-media-specialist', status: 'pending', progress: 0 },
+            { agentId: 'landing-page-specialist', status: 'pending', progress: 0 },
+            { agentId: 'performance-analyst', status: 'pending', progress: 0 }
+          ],
+          startTime: new Date(workflowTime),
+          estimatedTimeRemaining: 900 // 15 minutes
+        });
+      }
+    }
+
+    console.log(`❌ Workflow ${workflowId} not found`);
     return NextResponse.json(
       { error: 'Workflow not found' },
       { status: 404 }

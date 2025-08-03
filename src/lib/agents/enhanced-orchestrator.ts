@@ -44,7 +44,7 @@ export class EnhancedOrchestrator {
   private executionHistory: ExecutionResult[];
   private activeExecutions: Map<string, Promise<ExecutionResult>>;
   private qualityThreshold: number = 0.8;
-  private maxExecutionTime: number = 45000; // 45 seconds max per agent
+  private maxExecutionTime: number = 180000; // 3 minutes max per agent (background functions have 15 min total)
   private enableFastFail: boolean = true;
 
   constructor() {
