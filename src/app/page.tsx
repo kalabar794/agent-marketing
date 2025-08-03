@@ -11,12 +11,6 @@ const features = [
   "Brand consistency"
 ];
 
-const stats = [
-  { value: "94%", label: "Content Quality", description: "Average quality score" },
-  { value: "75%", label: "Time Saved", description: "Faster than traditional methods" },
-  { value: "98%", label: "Brand Consistency", description: "Maintains brand voice" },
-  { value: "96%", label: "Client Satisfaction", description: "Positive feedback rate" }
-];
 
 export default function Home() {
   return (
@@ -121,40 +115,6 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-pink-400/20 rounded-full blur-lg animate-float-delay-2"></div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-r from-slate-800 to-slate-900">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => {
-              const colors = [
-                'from-orange-500 to-red-500',
-                'from-blue-500 to-purple-500', 
-                'from-green-500 to-emerald-500',
-                'from-pink-500 to-rose-500'
-              ];
-              const bgColors = [
-                'bg-gradient-to-br from-slate-700 to-slate-800 border-orange-500/30',
-                'bg-gradient-to-br from-slate-700 to-slate-800 border-blue-500/30',
-                'bg-gradient-to-br from-slate-700 to-slate-800 border-green-500/30', 
-                'bg-gradient-to-br from-slate-700 to-slate-800 border-pink-500/30'
-              ];
-              return (
-                <div key={index} className={`text-center p-6 rounded-2xl ${bgColors[index]} border-2 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl`}>
-                  <div className={`text-4xl lg:text-5xl font-bold bg-gradient-to-r ${colors[index]} bg-clip-text text-transparent mb-3`}>
-                    {stat.value}
-                  </div>
-                  <div className="font-bold text-white mb-2 text-lg">
-                    {stat.label}
-                  </div>
-                  <div className="text-sm text-gray-300">
-                    {stat.description}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* Powerful Features Section */}
       <section className="py-24 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
@@ -229,11 +189,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-orange-500/30 via-pink-500/20 to-purple-600/30 pointer-events-none"></div>
         <div className="max-w-4xl mx-auto text-center px-6 relative z-10">
           <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-            Ready to Transform Your Marketing Content?
+            Start Creating with AI Agents
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of marketing professionals who trust our AI agents to create 
-            high-quality, engaging content that drives results.
+            Experience intelligent content generation powered by specialized AI agents working together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/create">
