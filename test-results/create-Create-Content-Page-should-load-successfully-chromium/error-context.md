@@ -1,0 +1,47 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - text: AgenticMarketing
+  - link "Home":
+    - /url: /
+  - link "Dashboard":
+    - /url: /dashboard/
+  - link "Create Content":
+    - /url: /create/
+  - link "Agent Workflow":
+    - /url: /workflow/
+- text: AI-Powered Content Creation
+- heading "Create Professional Marketing Content" [level=1]
+- paragraph: Choose your content type and let our specialized AI agents collaborate to create compelling, on-brand content in minutes.
+- heading "What type of content do you want to create?" [level=2]
+- heading "Blog Post" [level=3]
+- text: 15-20 minutes
+- paragraph: Long-form content for thought leadership and SEO
+- heading "Features:" [level=4]
+- text: SEO Optimized 2000+ words Research backed Brand aligned
+- heading "AI Agents involved:" [level=4]
+- text: 5 specialists
+- heading "Social Media Campaign" [level=3]
+- text: 8-12 minutes
+- paragraph: Multi-platform social content with engagement focus
+- heading "Features:" [level=4]
+- text: Multi-platform Visual content Hashtag research Engagement optimized
+- heading "AI Agents involved:" [level=4]
+- text: 4 specialists
+- heading "Email Campaign" [level=3]
+- text: 10-15 minutes
+- paragraph: Conversion-focused email sequences and newsletters
+- heading "Features:" [level=4]
+- text: A/B test ready Personalized CTA optimized Mobile responsive
+- heading "AI Agents involved:" [level=4]
+- text: 4 specialists
+- heading "Landing Page" [level=3]
+- text: 20-25 minutes
+- paragraph: High-converting pages for campaigns and products
+- heading "Features:" [level=4]
+- text: Conversion optimized SEO ready Mobile responsive A/B test variants
+- heading "AI Agents involved:" [level=4]
+- text: 6 specialists
+- alert
+```
