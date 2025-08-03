@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ContentGenerationRequest, AgentResponse, WorkflowStatus } from '@/types/content';
 import { ContentWorkflow } from '@/lib/workflow';
 import { EnhancedContentWorkflow } from '@/lib/enhanced-workflow';
+import { config } from '@/lib/config';
 
 // Force Node.js runtime for Anthropic SDK compatibility
 export const runtime = 'nodejs';
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     const workflowId = `enhanced-workflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     // Check if API key is configured
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!config.anthropicApiKey) {
       console.log('🎭 Using Demo Mode - ANTHROPIC_API_KEY not configured');
       
       // For demo mode, simulate background processing
@@ -157,7 +158,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if API key is configured (demo mode fallback)
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!config.anthropicApiKey) {
       console.log('🎭 No API key - returning demo content');
       return NextResponse.json({
         id: workflowId,
