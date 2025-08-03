@@ -3,11 +3,9 @@ import { ContentGenerationRequest, AgentResponse, WorkflowStatus } from '@/types
 import { ContentWorkflow } from '@/lib/workflow';
 import { EnhancedContentWorkflow } from '@/lib/enhanced-workflow';
 
-// Enable Netlify Background Functions (15-minute timeout instead of 10 seconds)
-export const config = {
-  runtime: 'nodejs18.x',
-  maxDuration: 900, // 15 minutes in seconds
-};
+// Force Node.js runtime for Anthropic SDK compatibility
+export const runtime = 'nodejs';
+export const maxDuration = 300; // 5 minutes (Netlify limit)
 
 export async function POST(request: NextRequest) {
   try {

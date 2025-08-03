@@ -6,7 +6,7 @@
   "/create/page": "/create",
   "/dashboard/page": "/dashboard",
   "/demo-backend/page": "/demo-backend",
-  "/page": "/",
   "/demo/page": "/demo",
+  "/page": "/",
   "/workflow/page": "/workflow"
 }

@@ -1,5 +1,6 @@
 import { ContentGenerationRequest } from '@/types/content';
 import { config } from '@/lib/config';
+import Anthropic from '@anthropic-ai/sdk';
 
 export abstract class BaseAgent {
   protected agentName: string;
@@ -20,7 +21,6 @@ export abstract class BaseAgent {
     temperature?: number;
     useTools?: boolean;
     systemPrompt?: string;
-    cachePrompt?: boolean;
   }): Promise<string> {
     
     // Quick fail if no API key configured
@@ -28,111 +28,71 @@ export abstract class BaseAgent {
       console.log(`${this.agentName}: No API key configured, using fallback`);
       throw new Error('API key not configured - using fallback');
     }
+
     const {
-      model = 'claude-4-sonnet',
+      model = 'claude-3-5-sonnet-20241022', // Use actual Claude 3.5 Sonnet model
       maxTokens = this.maxOutputTokens,
-      temperature = 0.7,
+      temperature = 0.4, // Lower temperature for more consistent marketing copy
       useTools = false,
-      systemPrompt,
-      cachePrompt = this.usePromptCaching
+      systemPrompt
     } = options || {};
 
-    // Build messages array with proper structure
-    const messages: any[] = [];
-    
-    if (systemPrompt) {
-      messages.push({
-        role: 'system',
-        content: cachePrompt ? [
-          {
-            type: 'text',
-            text: systemPrompt,
-            cache_control: { type: 'ephemeral' }
-          }
-        ] : systemPrompt
-      });
-    }
-
-    messages.push({
-      role: 'user',
-      content: cachePrompt ? [
-        {
-          type: 'text',
-          text: prompt,
-          cache_control: { type: 'ephemeral' }
-        }
-      ] : prompt
+    // Initialize Anthropic client
+    const anthropic = new Anthropic({
+      apiKey: config.anthropicApiKey,
     });
 
-    const requestBody: any = {
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      messages
-    };
-
-    // Add Claude 4 specific features
-    if (cachePrompt) {
-      requestBody.cache_control = { type: 'ephemeral' };
-    }
-
-    // Add tools if specified (for future tool use implementation)
-    if (useTools) {
-      requestBody.tools = this.getAvailableTools();
-    }
+    // Build messages array
+    const messages: Anthropic.MessageParam[] = [
+      {
+        role: 'user',
+        content: prompt
+      }
+    ];
 
     let lastError: Error | null = null;
     
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          'x-api-key': config.anthropicApiKey,
-          'anthropic-version': '2024-06-01' // Updated for Claude 4 features
+        console.log(`[${this.agentName}] Calling Claude API (attempt ${attempt}/${this.maxRetries})`);
+        
+        const requestOptions: Anthropic.MessageCreateParams = {
+          model,
+          max_tokens: maxTokens,
+          temperature,
+          messages
         };
 
-        // Add beta features header for Claude 4 capabilities
-        if (cachePrompt || useTools) {
-          headers['anthropic-beta'] = 'prompt-caching-2024-07-31,tools-2024-04-04';
+        // Add system prompt if provided
+        if (systemPrompt) {
+          requestOptions.system = systemPrompt;
         }
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(requestBody),
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(`API request failed: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
+        // Add tools if specified
+        if (useTools) {
+          requestOptions.tools = this.getAvailableTools();
         }
 
-        const data = await response.json();
+        const response = await anthropic.messages.create(requestOptions);
         
-        if (data.content && data.content[0] && data.content[0].text) {
-          return data.content[0].text;
+        // Extract text from response
+        const textContent = response.content.find(content => content.type === 'text');
+        if (textContent && 'text' in textContent) {
+          console.log(`[${this.agentName}] Claude API call successful`);
+          return textContent.text;
         } else {
-          throw new Error('Invalid response format from Claude API');
+          throw new Error('No text content found in Claude response');
         }
 
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         
-        if (error instanceof Error && error.name === 'AbortError') {
-          lastError = new Error(`Request timeout after ${this.timeout}ms`);
-        }
-
         console.warn(`${this.agentName} LLM call attempt ${attempt} failed:`, lastError.message);
         
         if (attempt < this.maxRetries) {
           // Exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
+          console.log(`[${this.agentName}] Retrying in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
