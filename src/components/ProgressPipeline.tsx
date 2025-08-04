@@ -117,9 +117,9 @@ export function ProgressPipeline({ stages, currentStage, className }: ProgressPi
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-gray-300">
                           <span>Progress</span>
-                          <span>{stage.progress}%</span>
+                          <span>{Math.round(Math.max(0, stage.progress || 0))}%</span>
                         </div>
-                        <Progress value={stage.progress} className="h-2" />
+                        <Progress value={Math.max(0, stage.progress || 0)} className="h-2" />
                       </div>
                     )}
 

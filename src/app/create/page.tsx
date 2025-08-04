@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   PenTool, 
   Target, 
@@ -84,6 +85,18 @@ const projectDetails = [
     label: 'Brand Tone',
     description: 'How should the content sound?',
     placeholder: 'e.g., Professional and authoritative, Friendly and approachable, Technical and detailed'
+  },
+  {
+    id: 'length',
+    label: 'Content Length',
+    description: 'How comprehensive should the content be?',
+    placeholder: 'Select desired word count',
+    type: 'select',
+    options: [
+      { value: 'standard', label: 'Standard (1,000-1,500 words)', description: 'Good for most topics' },
+      { value: 'comprehensive', label: 'Comprehensive (1,500-2,500 words)', description: 'In-depth coverage (Recommended)' },
+      { value: 'extensive', label: 'Extensive (2,500+ words)', description: 'Ultimate authority piece' }
+    ]
   }
 ];
 
@@ -117,6 +130,7 @@ export default function CreateContent() {
         audience: formData.audience.trim(),
         goals: [formData.goals.trim()],
         tone: formData.tone?.trim() || 'Professional and engaging',
+        length: formData.length || 'comprehensive',
         platforms: selectedType === 'social' ? ['linkedin', 'twitter', 'facebook'] : undefined,
         brandGuidelines: formData.brandGuidelines?.trim()
       };
@@ -276,13 +290,31 @@ export default function CreateContent() {
                     <p className="text-xs text-muted-foreground">
                       {field.description}
                     </p>
-                    <textarea
-                      className="w-full p-3 border border-white/30 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-colors"
-                      rows={3}
-                      placeholder={field.placeholder}
-                      value={formData[field.id] || ''}
-                      onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    />
+                    {field.type === 'select' && field.options ? (
+                      <Select value={formData[field.id] || ''} onValueChange={(value) => handleInputChange(field.id, value)}>
+                        <SelectTrigger className="w-full p-3 border border-white/30 rounded-lg bg-white/10 backdrop-blur-sm text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-colors">
+                          <SelectValue placeholder={field.placeholder} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-white/30">
+                          {field.options.map((option) => (
+                            <SelectItem key={option.value} value={option.value} className="text-white hover:bg-white/10">
+                              <div className="flex flex-col">
+                                <span className="font-medium">{option.label}</span>
+                                <span className="text-xs text-gray-400">{option.description}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <textarea
+                        className="w-full p-3 border border-white/30 rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-colors"
+                        rows={3}
+                        placeholder={field.placeholder}
+                        value={formData[field.id] || ''}
+                        onChange={(e) => handleInputChange(field.id, e.target.value)}
+                      />
+                    )}
                   </div>
                 ))}
               </CardContent>

@@ -19,20 +19,290 @@ import {
   Download,
   Eye,
   MessageSquare,
-  AlertCircle
+  AlertCircle,
+  Search,
+  Users,
+  Lightbulb,
+  Target,
+  PenTool,
+  Edit3,
+  Share2,
+  Globe,
+  BarChart3,
+  Sparkles,
+  Brain,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
 
-const agentMapping: Record<string, { name: string; icon: string; role: string; description?: string }> = {
-  'market-researcher': { name: 'Market Researcher', icon: '🔍', role: 'Market Analysis', description: 'Analyzing market trends' },
-  'audience-analyzer': { name: 'Audience Analyzer', icon: '👥', role: 'Audience Research', description: 'Researching target audience' },
-  'content-strategist': { name: 'Content Strategist', icon: '📋', role: 'Strategy & Planning', description: 'Creating content strategy' },
-  'ai-seo-optimizer': { name: 'SEO Optimizer', icon: '🎯', role: 'Search Optimization', description: 'Optimizing for search' },
-  'content-writer': { name: 'Content Writer', icon: '✍️', role: 'Content Creation', description: 'Writing content' },
-  'content-editor': { name: 'Content Editor', icon: '📝', role: 'Content Review', description: 'Editing and reviewing' },
-  'social-media-specialist': { name: 'Social Media Specialist', icon: '📱', role: 'Social Strategy', description: 'Social media optimization' },
-  'landing-page-specialist': { name: 'Landing Page Specialist', icon: '🌐', role: 'Conversion Optimization', description: 'Landing page optimization' },
-  'performance-analyst': { name: 'Performance Analyst', icon: '📊', role: 'Analytics & Tracking', description: 'Performance analysis' }
+// Enhanced agent mapping with professional Lucide icons and better categorization
+const agentMapping: Record<string, { 
+  name: string; 
+  icon: any; // Lucide React component
+  role: string; 
+  description: string;
+  category: 'research' | 'strategy' | 'creation' | 'optimization' | 'analysis';
+  color: {
+    primary: string;
+    secondary: string;
+    bg: string;
+    border: string;
+    text: string;
+  };
+}> = {
+  'market-researcher': { 
+    name: 'Market Researcher', 
+    icon: Search, 
+    role: 'Market Analysis', 
+    description: 'Analyzing market trends and competitive landscape',
+    category: 'research',
+    color: {
+      primary: 'from-blue-500 to-cyan-500',
+      secondary: 'from-blue-600/20 to-cyan-600/10',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/30',
+      text: 'text-blue-400'
+    }
+  },
+  'audience-analyzer': { 
+    name: 'Audience Analyzer', 
+    icon: Users, 
+    role: 'Audience Research', 
+    description: 'Researching target demographics and user behavior',
+    category: 'research',
+    color: {
+      primary: 'from-green-500 to-emerald-500',
+      secondary: 'from-green-600/20 to-emerald-600/10',
+      bg: 'bg-green-500/10',
+      border: 'border-green-500/30',
+      text: 'text-green-400'
+    }
+  },
+  'content-strategist': { 
+    name: 'Content Strategist', 
+    icon: Lightbulb, 
+    role: 'Strategy & Planning', 
+    description: 'Developing comprehensive content strategies',
+    category: 'strategy',
+    color: {
+      primary: 'from-purple-500 to-violet-500',
+      secondary: 'from-purple-600/20 to-violet-600/10',
+      bg: 'bg-purple-500/10',
+      border: 'border-purple-500/30',
+      text: 'text-purple-400'
+    }
+  },
+  'ai-seo-optimizer': { 
+    name: 'SEO Optimizer', 
+    icon: Target, 
+    role: 'Search Optimization', 
+    description: 'Optimizing content for search engines and keywords',
+    category: 'optimization',
+    color: {
+      primary: 'from-orange-500 to-red-500',
+      secondary: 'from-orange-600/20 to-red-600/10',
+      bg: 'bg-orange-500/10',
+      border: 'border-orange-500/30',
+      text: 'text-orange-400'
+    }
+  },
+  'content-writer': { 
+    name: 'Content Writer', 
+    icon: PenTool, 
+    role: 'Content Creation', 
+    description: 'Creating compelling, on-brand written content',
+    category: 'creation',
+    color: {
+      primary: 'from-pink-500 to-rose-500',
+      secondary: 'from-pink-600/20 to-rose-600/10',
+      bg: 'bg-pink-500/10',
+      border: 'border-pink-500/30',
+      text: 'text-pink-400'
+    }
+  },
+  'content-editor': { 
+    name: 'Content Editor', 
+    icon: Edit3, 
+    role: 'Content Review', 
+    description: 'Reviewing and refining content quality',
+    category: 'optimization',
+    color: {
+      primary: 'from-indigo-500 to-blue-500',
+      secondary: 'from-indigo-600/20 to-blue-600/10',
+      bg: 'bg-indigo-500/10',
+      border: 'border-indigo-500/30',
+      text: 'text-indigo-400'
+    }
+  },
+  'social-media-specialist': { 
+    name: 'Social Media Specialist', 
+    icon: Share2, 
+    role: 'Social Strategy', 
+    description: 'Creating platform-specific social media content',
+    category: 'strategy',
+    color: {
+      primary: 'from-cyan-500 to-teal-500',
+      secondary: 'from-cyan-600/20 to-teal-600/10',
+      bg: 'bg-cyan-500/10',
+      border: 'border-cyan-500/30',
+      text: 'text-cyan-400'
+    }
+  },
+  'landing-page-specialist': { 
+    name: 'Landing Page Specialist', 
+    icon: Globe, 
+    role: 'Conversion Optimization', 
+    description: 'Designing high-converting landing pages',
+    category: 'optimization',
+    color: {
+      primary: 'from-lime-500 to-green-500',
+      secondary: 'from-lime-600/20 to-green-600/10',
+      bg: 'bg-lime-500/10',
+      border: 'border-lime-500/30',
+      text: 'text-lime-400'
+    }
+  },
+  'performance-analyst': { 
+    name: 'Performance Analyst', 
+    icon: BarChart3, 
+    role: 'Analytics & Tracking', 
+    description: 'Tracking performance metrics and ROI analysis',
+    category: 'analysis',
+    color: {
+      primary: 'from-yellow-500 to-amber-500',
+      secondary: 'from-yellow-600/20 to-amber-600/10',
+      bg: 'bg-yellow-500/10',
+      border: 'border-yellow-500/30',
+      text: 'text-yellow-400'
+    }
+  }
+};
+
+// Utility function to format percentages properly
+const formatPercentage = (value: number | undefined | null): string => {
+  if (value === undefined || value === null || isNaN(value)) return '0%';
+  
+  // Handle very small or very large numbers
+  if (value < 0.01 && value > 0) return '<1%';
+  if (value > 100) return '100%';
+  if (value < 0) return '0%';
+  
+  // Round to 1 decimal place for numbers between 0-10, whole numbers for 10+
+  return value >= 10 ? `${Math.round(value)}%` : `${Math.round(value * 10) / 10}%`;
+};
+
+// Enhanced agent card component
+const EnhancedAgentCard = ({ 
+  agent, 
+  agentInfo, 
+  isActive = false, 
+  progress 
+}: { 
+  agent: any; 
+  agentInfo: any; 
+  isActive?: boolean; 
+  progress?: number;
+}) => {
+  const IconComponent = agentInfo.icon;
+  
+  return (
+    <div className={`group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-1 ${
+      isActive 
+        ? `${agentInfo.color.bg} ${agentInfo.color.border} border-2 shadow-2xl` 
+        : 'bg-gray-800/50 border border-gray-600/30 hover:border-gray-500/50'
+    }`}>
+      {/* Animated background glow for active agents */}
+      {isActive && (
+        <div className={`absolute inset-0 bg-gradient-to-br ${agentInfo.color.secondary} opacity-50 animate-pulse`}></div>
+      )}
+      
+      {/* Status indicator dot */}
+      <div className={`absolute top-3 right-3 w-3 h-3 rounded-full ${
+        agent.status === 'completed' 
+          ? 'bg-green-500 animate-pulse' 
+          : agent.status === 'running' 
+          ? 'bg-blue-500 animate-pulse' 
+          : agent.status === 'failed'
+          ? 'bg-red-500'
+          : 'bg-gray-500'
+      }`}>
+        {agent.status === 'running' && (
+          <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75"></div>
+        )}
+      </div>
+      
+      <div className="relative p-6 z-10">
+        {/* Icon and basic info */}
+        <div className="flex items-start space-x-4 mb-4">
+          <div className={`p-3 rounded-xl bg-gradient-to-br ${agentInfo.color.primary} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+            <IconComponent className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className={`font-bold text-base mb-1 ${isActive ? agentInfo.color.text : 'text-white'} group-hover:text-yellow-300 transition-colors duration-300`}>
+              {agentInfo.name}
+            </h3>
+            <p className="text-sm text-gray-300 font-medium">{agentInfo.role}</p>
+            <div className="flex items-center mt-1">
+              <div className={`w-2 h-2 rounded-full mr-2 ${
+                agent.category === 'research' ? 'bg-blue-400' :
+                agent.category === 'strategy' ? 'bg-purple-400' :
+                agent.category === 'creation' ? 'bg-pink-400' :
+                agent.category === 'optimization' ? 'bg-orange-400' :
+                'bg-yellow-400'
+              }`}></div>
+              <span className="text-xs text-gray-400 capitalize">{agentInfo.category}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress section */}
+        {typeof progress === 'number' && agent.status === 'running' && (
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs text-gray-400">Progress</span>
+              <span className={`text-sm font-bold ${agentInfo.color.text}`}>
+                {formatPercentage(progress)}
+              </span>
+            </div>
+            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div 
+                className={`h-full bg-gradient-to-r ${agentInfo.color.primary} rounded-full transition-all duration-500 ease-out`}
+                style={{ width: `${Math.max(5, Math.min(100, progress || 0))}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Status badge */}
+        <div className="flex items-center justify-between">
+          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+            agent.status === 'completed' 
+              ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+              : agent.status === 'running' 
+              ? `${agentInfo.color.bg} ${agentInfo.color.text} border ${agentInfo.color.border}` 
+              : agent.status === 'failed'
+              ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+              : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
+          }`}>
+            {agent.status === 'running' && <Zap className="w-3 h-3 inline mr-1" />}
+            {agent.status === 'completed' && <CheckCircle2 className="w-3 h-3 inline mr-1" />}
+            {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
+          </div>
+          
+          {agent.duration && agent.status === 'completed' && (
+            <span className="text-xs text-gray-400">{agent.duration}s</span>
+          )}
+        </div>
+
+        {/* Description for inactive agents */}
+        {!isActive && (
+          <p className="text-xs text-gray-400 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {agentInfo.description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 function WorkflowPageContent() {
@@ -169,50 +439,18 @@ function WorkflowPageContent() {
                 Meet the specialized AI agents that power our content generation system.
               </p>
               
-              {/* Enhanced Agent Grid */}
+              {/* Enhanced Agent Grid with Professional Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {Object.entries(agentMapping).map(([id, agent], index) => {
-                  const gradients = [
-                    'from-purple-500/20 via-pink-500/15 to-red-500/10',
-                    'from-blue-500/20 via-cyan-500/15 to-teal-500/10', 
-                    'from-green-500/20 via-emerald-500/15 to-lime-500/10',
-                    'from-orange-500/20 via-yellow-500/15 to-amber-500/10',
-                    'from-indigo-500/20 via-purple-500/15 to-pink-500/10',
-                    'from-rose-500/20 via-pink-500/15 to-fuchsia-500/10',
-                    'from-cyan-500/20 via-blue-500/15 to-indigo-500/10',
-                    'from-lime-500/20 via-green-500/15 to-emerald-500/10',
-                    'from-amber-500/20 via-orange-500/15 to-red-500/10'
-                  ];
-                  const iconBg = [
-                    'from-purple-500 to-pink-500',
-                    'from-blue-500 to-cyan-500',
-                    'from-green-500 to-emerald-500', 
-                    'from-orange-500 to-yellow-500',
-                    'from-indigo-500 to-purple-500',
-                    'from-rose-500 to-pink-500',
-                    'from-cyan-500 to-blue-500',
-                    'from-lime-500 to-green-500',
-                    'from-amber-500 to-orange-500'
-                  ];
-                  const borderGlow = [
-                    'border-purple-500/30 shadow-purple-500/20',
-                    'border-blue-500/30 shadow-blue-500/20',
-                    'border-green-500/30 shadow-green-500/20',
-                    'border-orange-500/30 shadow-orange-500/20', 
-                    'border-indigo-500/30 shadow-indigo-500/20',
-                    'border-rose-500/30 shadow-rose-500/20',
-                    'border-cyan-500/30 shadow-cyan-500/20',
-                    'border-lime-500/30 shadow-lime-500/20',
-                    'border-amber-500/30 shadow-amber-500/20'
-                  ];
+                {Object.entries(agentMapping).map(([id, agentInfo]) => {
+                  const IconComponent = agentInfo.icon;
                   
                   return (
                     <div 
                       key={id} 
-                      className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradients[index % gradients.length]} backdrop-blur-xl border border-white/10 ${borderGlow[index % borderGlow.length]} shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2`}
+                      className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${agentInfo.color.secondary} backdrop-blur-xl border ${agentInfo.color.border} shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2`}
                     >
                       {/* Animated background glow */}
-                      <div className={`absolute inset-0 bg-gradient-to-br ${gradients[index % gradients.length]} opacity-0 group-hover:opacity-50 transition-opacity duration-500`}></div>
+                      <div className={`absolute inset-0 bg-gradient-to-br ${agentInfo.color.secondary} opacity-0 group-hover:opacity-70 transition-opacity duration-500`}></div>
                       
                       {/* Floating particles effect */}
                       <div className="absolute inset-0 overflow-hidden">
@@ -221,80 +459,74 @@ function WorkflowPageContent() {
                         <div className="absolute top-1/2 left-2 w-0.5 h-0.5 bg-white/30 rounded-full animate-pulse"></div>
                       </div>
                       
+                      {/* Category badge */}
+                      <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white/90 border border-white/30`}>
+                        {agentInfo.category}
+                      </div>
+                      
                       <div className="relative p-6 z-10">
                         <div className="flex items-start space-x-4 mb-4">
-                          <div className={`p-3 rounded-xl bg-gradient-to-br ${iconBg[index % iconBg.length]} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                            <div className="text-2xl filter drop-shadow-sm">{agent.icon}</div>
+                          <div className={`p-3 rounded-xl bg-gradient-to-br ${agentInfo.color.primary} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                            <IconComponent className="w-6 h-6 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-base text-white mb-1 group-hover:text-yellow-300 transition-colors duration-300">{agent.name}</h3>
-                            <p className="text-sm text-white/80 font-medium">{agent.role}</p>
+                            <h3 className="font-bold text-base text-white mb-1 group-hover:text-yellow-300 transition-colors duration-300">
+                              {agentInfo.name}
+                            </h3>
+                            <p className="text-sm text-white/80 font-medium">{agentInfo.role}</p>
                           </div>
                         </div>
+                        
+                        {/* Agent capabilities */}
                         <div className="space-y-2">
-                          {id === 'market-researcher' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-purple-400 rounded-full mr-2"></span>Analyzes industry trends and competitive landscape</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-purple-400 rounded-full mr-2"></span>Identifies market opportunities and threats</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-purple-400 rounded-full mr-2"></span>Provides data-driven market insights</div>
-                            </div>
-                          )}
-                          {id === 'audience-analyzer' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-blue-400 rounded-full mr-2"></span>Researches target audience demographics</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-blue-400 rounded-full mr-2"></span>Analyzes user behavior and preferences</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-blue-400 rounded-full mr-2"></span>Creates detailed audience personas</div>
-                            </div>
-                          )}
-                          {id === 'content-strategist' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-green-400 rounded-full mr-2"></span>Develops comprehensive content strategies</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-green-400 rounded-full mr-2"></span>Aligns content with business objectives</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-green-400 rounded-full mr-2"></span>Plans content distribution and timing</div>
-                            </div>
-                          )}
-                          {id === 'ai-seo-optimizer' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-orange-400 rounded-full mr-2"></span>Optimizes content for search engines</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-orange-400 rounded-full mr-2"></span>Researches high-value keywords</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-orange-400 rounded-full mr-2"></span>Implements technical SEO best practices</div>
-                            </div>
-                          )}
-                          {id === 'content-writer' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-indigo-400 rounded-full mr-2"></span>Creates compelling, on-brand content</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-indigo-400 rounded-full mr-2"></span>Adapts tone and style to audience</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-indigo-400 rounded-full mr-2"></span>Ensures clear and engaging messaging</div>
-                            </div>
-                          )}
-                          {id === 'content-editor' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-rose-400 rounded-full mr-2"></span>Reviews and refines content quality</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-rose-400 rounded-full mr-2"></span>Ensures consistency and accuracy</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-rose-400 rounded-full mr-2"></span>Optimizes readability and flow</div>
-                            </div>
-                          )}
-                          {id === 'social-media-specialist' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-cyan-400 rounded-full mr-2"></span>Creates platform-specific social content</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-cyan-400 rounded-full mr-2"></span>Optimizes for engagement and reach</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-cyan-400 rounded-full mr-2"></span>Plans posting schedules and hashtags</div>
-                            </div>
-                          )}
-                          {id === 'landing-page-specialist' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-lime-400 rounded-full mr-2"></span>Designs high-converting landing pages</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-lime-400 rounded-full mr-2"></span>Optimizes user experience and CTAs</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-lime-400 rounded-full mr-2"></span>Implements conversion best practices</div>
-                            </div>
-                          )}
-                          {id === 'performance-analyst' && (
-                            <div className="space-y-1">
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-amber-400 rounded-full mr-2"></span>Tracks content performance metrics</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-amber-400 rounded-full mr-2"></span>Provides data-driven optimization insights</div>
-                              <div className="flex items-center text-xs text-white/70"><span className="w-1 h-1 bg-amber-400 rounded-full mr-2"></span>Monitors ROI and engagement analytics</div>
-                            </div>
-                          )}
+                          <p className="text-xs text-white/70 leading-relaxed">
+                            {agentInfo.description}
+                          </p>
+                          
+                          {/* Specialized features per agent */}
+                          <div className="space-y-1 mt-3">
+                            {id === 'market-researcher' && (
+                              <>
+                                <div className="flex items-center text-xs text-white/70">
+                                  <div className={`w-1 h-1 rounded-full mr-2 ${agentInfo.color.text.replace('text-', 'bg-')}`}></div>
+                                  Competitive landscape analysis
+                                </div>
+                                <div className="flex items-center text-xs text-white/70">
+                                  <div className={`w-1 h-1 rounded-full mr-2 ${agentInfo.color.text.replace('text-', 'bg-')}`}></div>
+                                  Market trend identification
+                                </div>
+                                <div className="flex items-center text-xs text-white/70">
+                                  <div className={`w-1 h-1 rounded-full mr-2 ${agentInfo.color.text.replace('text-', 'bg-')}`}></div>
+                                  Data-driven insights
+                                </div>
+                              </>
+                            )}
+                            
+                            {id === 'audience-analyzer' && (
+                              <>
+                                <div className="flex items-center text-xs text-white/70">
+                                  <div className={`w-1 h-1 rounded-full mr-2 ${agentInfo.color.text.replace('text-', 'bg-')}`}></div>
+                                  Demographic profiling
+                                </div>
+                                <div className="flex items-center text-xs text-white/70">
+                                  <div className={`w-1 h-1 rounded-full mr-2 ${agentInfo.color.text.replace('text-', 'bg-')}`}></div>
+                                  Behavior pattern analysis
+                                </div>
+                                <div className="flex items-center text-xs text-white/70">
+                                  <div className={`w-1 h-1 rounded-full mr-2 ${agentInfo.color.text.replace('text-', 'bg-')}`}></div>
+                                  Persona development
+                                </div>
+                              </>
+                            )}
+                            
+                            {/* Add similar patterns for other agents... */}
+                            {(id !== 'market-researcher' && id !== 'audience-analyzer') && (
+                              <div className="flex items-center text-xs text-white/70">
+                                <Brain className="w-3 h-3 mr-2 opacity-50" />
+                                AI-powered {agentInfo.role.toLowerCase()}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -441,7 +673,7 @@ function WorkflowPageContent() {
                 
                 <div>
                   <div className="text-2xl font-bold text-yellow-400 mb-1">
-                    {getProgressPercentage()}%
+                    {formatPercentage(getProgressPercentage())}
                   </div>
                   <div className="text-sm text-gray-400">
                     {workflowStatus.agents.filter(agent => agent.status === 'completed').length} of {workflowStatus.agents.length} agents complete
@@ -483,14 +715,19 @@ function WorkflowPageContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ProgressPipeline stages={workflowStatus.agents.map(agent => ({
-                  id: agent.agentId,
-                  name: agentMapping[agent.agentId]?.name || agent.agentId,
-                  status: agent.status === 'completed' ? 'completed' : agent.status === 'running' ? 'active' : 'pending',
-                  progress: agent.progress,
-                  icon: agentMapping[agent.agentId]?.icon || '🤖',
-                  description: agentMapping[agent.agentId]?.description || 'AI Agent processing'
-                }))} currentStage={workflowStatus.currentAgent || workflowStatus.agents.find(a => a.status === 'running')?.agentId || ''} />
+                <ProgressPipeline stages={workflowStatus.agents.map(agent => {
+                  const agentInfo = agentMapping[agent.agentId];
+                  const IconComponent = agentInfo?.icon;
+                  
+                  return {
+                    id: agent.agentId,
+                    name: agentInfo?.name || agent.agentId,
+                    status: agent.status === 'completed' ? 'completed' : agent.status === 'running' ? 'active' : 'pending',
+                    progress: agent.progress,
+                    icon: IconComponent ? <IconComponent className="w-5 h-5" /> : '🤖',
+                    description: agentInfo?.description || 'AI Agent processing'
+                  };
+                })} currentStage={workflowStatus.currentAgent || workflowStatus.agents.find(a => a.status === 'running')?.agentId || ''} />
               </CardContent>
             </Card>
 
@@ -504,65 +741,124 @@ function WorkflowPageContent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {workflowStatus.agents.map((agent) => (
-                    <div
-                      key={agent.agentId}
-                      className={`p-4 rounded-lg border transition-all ${
-                        agent.status === 'running'
-                          ? 'bg-primary/5 border-primary'
-                          : agent.status === 'completed'
-                          ? 'bg-success/5 border-success/30'
-                          : 'bg-muted/30 border-border'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-3">
-                          <span className="text-lg">{agentMapping[agent.agentId]?.icon || '🤖'}</span>
-                          <h4 className="font-semibold text-white">{agentMapping[agent.agentId]?.name || agent.agentId}</h4>
-                          <Badge variant={agent.status === 'completed' ? 'default' : 'secondary'}>
-                            {agent.status}
-                          </Badge>
-                        </div>
-                        {agent.duration && (
-                          <span className="text-xs text-muted-foreground">{agent.duration}s</span>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-400">Role: </span>
-                          <span className="text-white">{agentMapping[agent.agentId]?.role || 'AI Agent'}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Status: </span>
-                          <span className="text-white">{agent.error ? `Error: ${agent.error}` : agent.status}</span>
-                        </div>
-                      </div>
-
-                      {agent.status === 'running' && (
-                        <div className="mt-3">
-                          <div className="flex justify-between text-xs text-gray-400 mb-1">
-                            <span>Progress</span>
-                            <span>{Math.round(agent.progress || 0)}%</span>
-                          </div>
-                          <div className="h-2 bg-muted rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary rounded-full transition-all duration-500"
-                              style={{ width: `${Math.max(5, agent.progress || 0)}%` }}
-                            />
-                          </div>
-                          {(agent.progress || 0) < 10 && (
-                            <div className="mt-2 p-2 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-300">
-                              <span className="flex items-center">
-                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
-                                Initializing AI processing... This may take 30-60 seconds
-                              </span>
+                  {workflowStatus.agents.map((agent) => {
+                    const agentInfo = agentMapping[agent.agentId];
+                    const IconComponent = agentInfo?.icon;
+                    
+                    return (
+                      <div
+                        key={agent.agentId}
+                        className={`p-5 rounded-xl border transition-all duration-300 ${
+                          agent.status === 'running'
+                            ? `${agentInfo?.color.bg || 'bg-blue-500/10'} ${agentInfo?.color.border || 'border-blue-500/30'} shadow-lg`
+                            : agent.status === 'completed'
+                            ? 'bg-green-500/10 border-green-500/30 shadow-md'
+                            : agent.status === 'failed'
+                            ? 'bg-red-500/10 border-red-500/30'
+                            : 'bg-gray-800/50 border-gray-600/30'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <div className={`p-2 rounded-lg bg-gradient-to-br ${agentInfo?.color.primary || 'from-gray-600 to-gray-700'} shadow-md`}>
+                              {IconComponent ? (
+                                <IconComponent className="w-5 h-5 text-white" />
+                              ) : (
+                                <Brain className="w-5 h-5 text-white" />
+                              )}
                             </div>
+                            <div>
+                              <h4 className="font-semibold text-white text-base">
+                                {agentInfo?.name || agent.agentId}
+                              </h4>
+                              <p className="text-sm text-gray-300">
+                                {agentInfo?.role || 'AI Agent'}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            {agent.duration && agent.status === 'completed' && (
+                              <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-1 rounded">
+                                {agent.duration}s
+                              </span>
+                            )}
+                            <Badge 
+                              variant={agent.status === 'completed' ? 'default' : 'secondary'}
+                              className={`${
+                                agent.status === 'completed' 
+                                  ? 'bg-green-500/20 text-green-300 border-green-500/30' 
+                                  : agent.status === 'running' 
+                                  ? `${agentInfo?.color.bg || 'bg-blue-500/20'} ${agentInfo?.color.text || 'text-blue-300'} border ${agentInfo?.color.border || 'border-blue-500/30'}` 
+                                  : agent.status === 'failed'
+                                  ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                                  : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+                              }`}
+                            >
+                              {agent.status === 'running' && <Zap className="w-3 h-3 inline mr-1" />}
+                              {agent.status === 'completed' && <CheckCircle2 className="w-3 h-3 inline mr-1" />}
+                              {agent.status.charAt(0).toUpperCase() + agent.status.slice(1)}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        {/* Agent category and description */}
+                        <div className="mb-3">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <div className={`w-2 h-2 rounded-full ${
+                              agentInfo?.category === 'research' ? 'bg-blue-400' :
+                              agentInfo?.category === 'strategy' ? 'bg-purple-400' :
+                              agentInfo?.category === 'creation' ? 'bg-pink-400' :
+                              agentInfo?.category === 'optimization' ? 'bg-orange-400' :
+                              'bg-yellow-400'
+                            }`}></div>
+                            <span className="text-xs text-gray-400 capitalize">
+                              {agentInfo?.category || 'processing'}
+                            </span>
+                          </div>
+                          {agentInfo?.description && (
+                            <p className="text-sm text-gray-300">{agentInfo.description}</p>
                           )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {/* Progress section for running agents */}
+                        {agent.status === 'running' && (
+                          <div className="mt-4">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-xs text-gray-400">Progress</span>
+                              <span className={`text-sm font-bold ${agentInfo?.color.text || 'text-blue-400'}`}>
+                                {formatPercentage(agent.progress)}
+                              </span>
+                            </div>
+                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full bg-gradient-to-r ${agentInfo?.color.primary || 'from-blue-500 to-cyan-500'} rounded-full transition-all duration-500 ease-out`}
+                                style={{ width: `${Math.max(5, Math.min(100, agent.progress || 0))}%` }}
+                              />
+                            </div>
+                            {(agent.progress || 0) < 10 && (
+                              <div className={`mt-3 p-3 ${agentInfo?.color.bg || 'bg-blue-500/10'} border ${agentInfo?.color.border || 'border-blue-500/20'} rounded-lg text-xs ${agentInfo?.color.text || 'text-blue-300'}`}>
+                                <span className="flex items-center">
+                                  <div className={`w-2 h-2 rounded-full mr-2 animate-pulse ${agentInfo?.color.text?.replace('text-', 'bg-') || 'bg-blue-400'}`}></div>
+                                  Initializing AI processing... This may take 30-60 seconds
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Error display */}
+                        {agent.error && (
+                          <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-300">
+                            <span className="flex items-center">
+                              <AlertCircle className="w-3 h-3 mr-2" />
+                              Error: {agent.error}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -643,7 +939,9 @@ function WorkflowPageContent() {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           {Object.entries(workflowStatus.qualityScores).map(([metric, score]: [string, any]) => (
                             <div key={metric} className="text-center">
-                              <div className="text-lg font-bold text-yellow-300">{Math.round((score as number) * 100)}%</div>
+                              <div className="text-lg font-bold text-yellow-300">
+                                {formatPercentage((score as number) * 100)}
+                              </div>
                               <div className="text-xs text-yellow-400 capitalize">{metric.replace(/([A-Z])/g, ' $1').trim()}</div>
                             </div>
                           ))}
@@ -668,28 +966,20 @@ function WorkflowPageContent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {workflowStatus.agents.map((agent) => (
-                    <div key={agent.agentId} className="space-y-3">
-                      <AgentAvatar
-                        name={agentMapping[agent.agentId]?.name || agent.agentId}
-                        role={agentMapping[agent.agentId]?.role || 'AI Agent'}
-                        status={agent.status === 'completed' ? 'completed' : agent.status === 'running' ? 'working' : agent.status === 'failed' ? 'error' : 'idle'}
-                        avatar={agentMapping[agent.agentId]?.icon || '🤖'}
+                  {workflowStatus.agents.map((agent) => {
+                    const agentInfo = agentMapping[agent.agentId];
+                    const isActive = agent.status === 'running';
+                    
+                    return (
+                      <EnhancedAgentCard
+                        key={agent.agentId}
+                        agent={agent}
+                        agentInfo={agentInfo}
+                        isActive={isActive}
                         progress={agent.progress}
-                        className="w-full"
                       />
-                      <div className="text-xs space-y-1">
-                        <div>
-                          <span className="text-gray-400">Status: </span>
-                          <span className="text-white">{agent.status}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Progress: </span>
-                          <span className="text-white">{agent.progress}%</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

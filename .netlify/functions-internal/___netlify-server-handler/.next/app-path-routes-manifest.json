@@ -1,0 +1,14 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/quality/route": "/api/quality",
+  "/favicon.ico/route": "/favicon.ico",
+  "/api/status/route": "/api/status",
+  "/api/status/stream/route": "/api/status/stream",
+  "/api/content/generate/route": "/api/content/generate",
+  "/demo/page": "/demo",
+  "/workflow/page": "/workflow",
+  "/page": "/",
+  "/demo-backend/page": "/demo-backend",
+  "/dashboard/page": "/dashboard",
+  "/create/page": "/create"
+}
