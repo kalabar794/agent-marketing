@@ -1,5 +1,5 @@
 import { ContentGenerationRequest } from '@/types/content';
-import { config } from '@/lib/config';
+import { config, validateConfigAtRuntime } from '@/lib/config';
 import Anthropic from '@anthropic-ai/sdk';
 
 export abstract class BaseAgent {
@@ -23,7 +23,8 @@ export abstract class BaseAgent {
     systemPrompt?: string;
   }): Promise<string> {
     
-    // API key is validated at config load time - no need to check again
+    // Validate config at runtime to ensure API key is available
+    validateConfigAtRuntime();
     console.log(`[${this.agentName}] Starting LLM call with validated API key`);
 
     const {

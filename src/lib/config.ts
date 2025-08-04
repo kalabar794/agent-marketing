@@ -35,6 +35,18 @@ function validateApiKey(apiKey: string | undefined): string {
 }
 
 function createConfig(): Config {
+  // During build time, allow missing API key
+  const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.ANTHROPIC_API_KEY;
+  
+  if (isBuildTime) {
+    console.log('🏗️ Build time detected - deferring API key validation to runtime');
+    return {
+      anthropicApiKey: '', // Empty string during build
+      nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+      nodeEnv: process.env.NODE_ENV || 'development',
+    };
+  }
+
   try {
     return {
       anthropicApiKey: validateApiKey(process.env.ANTHROPIC_API_KEY),
@@ -56,4 +68,17 @@ function createConfig(): Config {
 
 // Export the configuration
 export const config = createConfig();
+
+// Export a function to validate config at runtime
+export function validateConfigAtRuntime(): void {
+  if (!config.anthropicApiKey) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new ConfigError('ANTHROPIC_API_KEY is required at runtime');
+    }
+    // Update the config with runtime value
+    (config as any).anthropicApiKey = validateApiKey(apiKey);
+  }
+}
+
 export { ConfigError };
