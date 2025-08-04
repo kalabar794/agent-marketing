@@ -158,64 +158,31 @@ export async function GET(request: NextRequest) {
       const now = Date.now();
       const ageInMinutes = (now - workflowTime) / (1000 * 60);
       
-      // If the workflow is recent (less than 2 hours), it might have completed successfully
+      // If the workflow is recent (less than 2 hours), it was likely a real failure
       if (ageInMinutes < 120) {
-        console.log(`🔍 Workflow ${workflowId} not found but is recent (${Math.round(ageInMinutes)} min old) - providing completion fallback`);
+        console.log(`❌ Workflow ${workflowId} not found and is recent (${Math.round(ageInMinutes)} min old) - likely failed due to API issues`);
         return NextResponse.json({
           id: workflowId,
-          status: 'completed', 
-          progress: 100,
-          workflowType: 'enhanced-background-completed',
+          status: 'failed', 
+          progress: 0,
+          error: 'Workflow failed - API integration not working. No fallback content available.',
+          workflowType: 'enhanced-background-failed',
           startTime: new Date(workflowTime),
-          endTime: new Date(workflowTime + (15 * 60 * 1000)), // Assume 15 min completion time
+          endTime: new Date(),
           estimatedTimeRemaining: 0,
           currentAgent: null,
           agents: [
-            { agentId: 'content-strategist', status: 'completed', progress: 100 },
-            { agentId: 'content-writer', status: 'completed', progress: 100 },
-            { agentId: 'ai-seo-optimizer', status: 'completed', progress: 100 },
-            { agentId: 'content-editor', status: 'completed', progress: 100 }
+            { agentId: 'market-researcher', status: 'failed', progress: 0 },
+            { agentId: 'audience-analyzer', status: 'failed', progress: 0 },
+            { agentId: 'ai-seo-optimizer', status: 'failed', progress: 0 },
+            { agentId: 'content-strategist', status: 'failed', progress: 0 },
+            { agentId: 'content-writer', status: 'failed', progress: 0 },
+            { agentId: 'content-editor', status: 'failed', progress: 0 },
+            { agentId: 'social-media-specialist', status: 'failed', progress: 0 },
+            { agentId: 'landing-page-specialist', status: 'failed', progress: 0 },
+            { agentId: 'performance-analyst', status: 'failed', progress: 0 }
           ],
-          content: {
-            id: `recovered-content-${workflowId}`,
-            title: 'Content Generation Completed Successfully',
-            content: `# Your Content Was Generated Successfully!
-
-## What Happened
-Your AI-powered content generation workflow completed successfully. However, due to serverless platform limitations, the detailed results are no longer stored in memory.
-
-## This is Normal
-In serverless environments, temporary storage gets cleaned up between function invocations. This is a known behavior and your content was generated as requested.
-
-## For Production Use
-In a production environment, generated content would be stored in:
-- Persistent database (PostgreSQL, MongoDB)
-- Cloud storage (AWS S3, Google Cloud Storage)  
-- Redis cache for quick access
-- Content management system
-
-## What You Can Do
-1. **Try Again**: Generate new content with the same parameters
-2. **Contact Support**: If this was important content, we may be able to recover it
-3. **Use Local Storage**: For development, consider running locally
-
-Thank you for testing our AI content generation system!`,
-            summary: 'Content generation completed successfully. Results cleaned up due to serverless limitations.',
-            seoKeywords: ['content', 'generation', 'completed', 'serverless', 'ai-powered'],
-            platforms: {
-              web: 'Content was optimized for web display and SEO',
-              social: 'Social media ready content was created',
-              email: 'Email-optimized version was generated'
-            }
-          },
-          qualityScores: {
-            overall: 0.85,
-            content: 0.8,
-            seo: 0.8,
-            engagement: 0.85,
-            brand: 0.8
-          },
-          note: 'This workflow completed successfully but detailed results were cleaned up due to serverless limitations. In production, results would be stored persistently.'
+          note: 'AI content generation failed. API integration requires fixing for real content generation.'
         });
       }
     }
