@@ -432,35 +432,35 @@ function WorkflowPageContent() {
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
-                  <h3 className="font-semibold text-foreground mb-1">{workflowStatus.content?.title || 'Content Generation Project'}</h3>
+                  <h3 className="font-semibold text-white mb-1">{workflowStatus.content?.title || 'Content Generation Project'}</h3>
                   <div className="flex items-center space-x-2">
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">AI Content Generation</span>
+                    <FileText className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-400">AI Content Generation</span>
                   </div>
                 </div>
                 
                 <div>
-                  <div className="text-2xl font-bold text-primary mb-1">
+                  <div className="text-2xl font-bold text-yellow-400 mb-1">
                     {getProgressPercentage()}%
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-gray-400">
                     {workflowStatus.agents.filter(agent => agent.status === 'completed').length} of {workflowStatus.agents.length} agents complete
                   </div>
                 </div>
                 
                 <div>
                   <div className="flex items-center space-x-2 mb-1">
-                    <Clock className="w-4 h-4 text-accent" />
-                    <span className="font-semibold text-foreground">ETA: {workflowStatus.estimatedTimeRemaining ? `${workflowStatus.estimatedTimeRemaining} min` : 'Calculating...'}</span>
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    <span className="font-semibold text-white">ETA: {workflowStatus.estimatedTimeRemaining ? `${workflowStatus.estimatedTimeRemaining} min` : 'Calculating...'}</span>
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-gray-400">
                     Started at {new Date(workflowStatus.startTime).toLocaleTimeString()}
                   </div>
                 </div>
                 
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">Current time</div>
-                  <div className="font-semibold text-foreground">
+                  <div className="text-sm text-gray-400 mb-1">Current time</div>
+                  <div className="font-semibold text-white">
                     {formatTime(currentTime)}
                   </div>
                 </div>
@@ -474,11 +474,11 @@ function WorkflowPageContent() {
           <div className="lg:col-span-2 space-y-8">
             <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-white">
                   <RefreshCw className={`w-5 h-5 text-yellow-400 ${isRunning ? 'animate-spin' : ''}`} />
                   <span>Content Generation Pipeline</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-300">
                   Real-time progress through the content creation workflow
                 </CardDescription>
               </CardHeader>
@@ -497,8 +497,8 @@ function WorkflowPageContent() {
             {/* Stage Details */}
             <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
-                <CardTitle>Stage Details & Outputs</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-white">Stage Details & Outputs</CardTitle>
+                <CardDescription className="text-gray-300">
                   Detailed view of each workflow stage and its deliverables
                 </CardDescription>
               </CardHeader>
@@ -518,7 +518,7 @@ function WorkflowPageContent() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-3">
                           <span className="text-lg">{agentMapping[agent.agentId]?.icon || '🤖'}</span>
-                          <h4 className="font-semibold text-foreground">{agentMapping[agent.agentId]?.name || agent.agentId}</h4>
+                          <h4 className="font-semibold text-white">{agentMapping[agent.agentId]?.name || agent.agentId}</h4>
                           <Badge variant={agent.status === 'completed' ? 'default' : 'secondary'}>
                             {agent.status}
                           </Badge>
@@ -530,18 +530,18 @@ function WorkflowPageContent() {
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-muted-foreground">Role: </span>
-                          <span className="text-foreground">{agentMapping[agent.agentId]?.role || 'AI Agent'}</span>
+                          <span className="text-gray-400">Role: </span>
+                          <span className="text-white">{agentMapping[agent.agentId]?.role || 'AI Agent'}</span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Status: </span>
-                          <span className="text-foreground">{agent.error ? `Error: ${agent.error}` : agent.status}</span>
+                          <span className="text-gray-400">Status: </span>
+                          <span className="text-white">{agent.error ? `Error: ${agent.error}` : agent.status}</span>
                         </div>
                       </div>
 
                       {agent.status === 'running' && (
                         <div className="mt-3">
-                          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                          <div className="flex justify-between text-xs text-gray-400 mb-1">
                             <span>Progress</span>
                             <span>{Math.round(agent.progress || 0)}%</span>
                           </div>
@@ -571,11 +571,11 @@ function WorkflowPageContent() {
             {workflowStatus.status === 'completed' && workflowStatus.content && (
               <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20" data-content-section>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
+                  <CardTitle className="flex items-center space-x-2 text-white">
                     <CheckCircle2 className="w-5 h-5 text-green-400" />
                     <span>Generated Content</span>
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-300">
                     AI-generated content ready for review and use
                   </CardDescription>
                 </CardHeader>
@@ -585,7 +585,7 @@ function WorkflowPageContent() {
                     {workflowStatus.content.title && (
                       <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
                         <h3 className="text-lg font-semibold text-green-400 mb-2">📝 Title</h3>
-                        <p className="text-foreground">{workflowStatus.content.title}</p>
+                        <p className="text-white">{workflowStatus.content.title}</p>
                       </div>
                     )}
 
@@ -593,7 +593,7 @@ function WorkflowPageContent() {
                     {workflowStatus.content.content && (
                       <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
                         <h3 className="text-lg font-semibold text-blue-400 mb-2">📄 Main Content</h3>
-                        <div className="text-foreground whitespace-pre-wrap max-h-96 overflow-y-auto">
+                        <div className="text-white whitespace-pre-wrap max-h-96 overflow-y-auto">
                           {workflowStatus.content.content}
                         </div>
                       </div>
@@ -603,7 +603,7 @@ function WorkflowPageContent() {
                     {workflowStatus.content.summary && (
                       <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
                         <h3 className="text-lg font-semibold text-purple-400 mb-2">📋 Summary</h3>
-                        <p className="text-foreground">{workflowStatus.content.summary}</p>
+                        <p className="text-white">{workflowStatus.content.summary}</p>
                       </div>
                     )}
 
@@ -629,7 +629,7 @@ function WorkflowPageContent() {
                           {Object.entries(workflowStatus.content.platforms).map(([platform, content]: [string, any]) => (
                             <div key={platform} className="bg-cyan-500/5 p-3 rounded">
                               <h4 className="font-medium text-cyan-300 capitalize mb-1">{platform}</h4>
-                              <p className="text-foreground text-sm">{typeof content === 'string' ? content : JSON.stringify(content, null, 2)}</p>
+                              <p className="text-white text-sm">{typeof content === 'string' ? content : JSON.stringify(content, null, 2)}</p>
                             </div>
                           ))}
                         </div>
@@ -661,8 +661,8 @@ function WorkflowPageContent() {
             {/* Active Agents */}
             <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
-                <CardTitle>AI Agents Status</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-white">AI Agents Status</CardTitle>
+                <CardDescription className="text-gray-300">
                   Current activity of each AI agent
                 </CardDescription>
               </CardHeader>
@@ -680,12 +680,12 @@ function WorkflowPageContent() {
                       />
                       <div className="text-xs space-y-1">
                         <div>
-                          <span className="text-muted-foreground">Status: </span>
-                          <span className="text-foreground">{agent.status}</span>
+                          <span className="text-gray-400">Status: </span>
+                          <span className="text-white">{agent.status}</span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Progress: </span>
-                          <span className="text-foreground">{agent.progress}%</span>
+                          <span className="text-gray-400">Progress: </span>
+                          <span className="text-white">{agent.progress}%</span>
                         </div>
                       </div>
                     </div>
@@ -697,11 +697,11 @@ function WorkflowPageContent() {
             {/* Live Activity Feed */}
             <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-white">
                   <MessageSquare className="w-5 h-5" />
                   <span>Live Activity</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-300">
                   Real-time updates from AI agents
                 </CardDescription>
               </CardHeader>
@@ -714,10 +714,10 @@ function WorkflowPageContent() {
                       }`} />
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
-                          <span className="font-medium text-foreground">{update.agent}</span>
-                          <span className="text-xs text-muted-foreground">{update.time}</span>
+                          <span className="font-medium text-white">{update.agent}</span>
+                          <span className="text-xs text-gray-400">{update.time}</span>
                         </div>
-                        <p className="text-muted-foreground">{update.action}</p>
+                        <p className="text-gray-300">{update.action}</p>
                       </div>
                     </div>
                   ))}
@@ -728,7 +728,7 @@ function WorkflowPageContent() {
             {/* Quick Actions */}
             <Card className="shadow-2xl bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle className="text-white">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start">

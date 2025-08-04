@@ -23,39 +23,8 @@ export async function POST(request: NextRequest) {
     // Generate workflow ID immediately
     const workflowId = `enhanced-workflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    // Check if API key is configured
-    if (!config.anthropicApiKey) {
-      console.log('🎭 Using Demo Mode - ANTHROPIC_API_KEY not configured');
-      
-      // For demo mode, simulate background processing
-      setTimeout(async () => {
-        try {
-          const enhancedWorkflow = new EnhancedContentWorkflow(body, { demoMode: true });
-          await enhancedWorkflow.simulateDemoWorkflow(workflowId);
-        } catch (error) {
-          console.error('Demo workflow simulation failed:', error);
-        }
-      }, 100);
-      
-      return NextResponse.json({
-        workflowId,
-        status: 'started',
-        workflowType: 'demo',
-        estimatedTime: 60, // 1 minute demo
-        agents: [
-          { agentId: 'market-researcher', status: 'pending', progress: 0 },
-          { agentId: 'content-strategist', status: 'pending', progress: 0 },
-          { agentId: 'content-writer', status: 'pending', progress: 0 },
-          { agentId: 'ai-seo-optimizer', status: 'pending', progress: 0 },
-          { agentId: 'content-editor', status: 'pending', progress: 0 }
-        ],
-        options: {
-          priorityMode: 'demo',
-          enableOptimization: false,
-          demoMode: true
-        }
-      });
-    }
+    // Config validation ensures API key is present - no demo mode needed
+    console.log('🚀 Starting Real AI Content Workflow with validated API key');
 
     // Extract workflow options from request
     const options = {
@@ -251,69 +220,6 @@ Thank you for testing our AI content generation system!`,
       }
     }
 
-    // Check if API key is configured (demo mode fallback)
-    if (!config.anthropicApiKey) {
-      console.log('🎭 No API key - returning demo content');
-      return NextResponse.json({
-        id: workflowId,
-        status: 'completed',
-        progress: 100,
-        workflowType: 'demo',
-        agents: [
-          { agentId: 'market-researcher', status: 'completed', progress: 100 },
-          { agentId: 'content-strategist', status: 'completed', progress: 100 },
-          { agentId: 'content-writer', status: 'completed', progress: 100 },
-          { agentId: 'ai-seo-optimizer', status: 'completed', progress: 100 },
-          { agentId: 'content-editor', status: 'completed', progress: 100 }
-        ],
-        startTime: new Date(Date.now() - 60000), // 1 minute ago
-        endTime: new Date(),
-        estimatedTimeRemaining: 0,
-        content: {
-          id: 'demo-content',
-          title: 'Demo Content: AI-Powered Marketing Revolution',
-          content: `# The Future of AI-Powered Marketing
-
-## Introduction
-Artificial Intelligence is transforming the marketing landscape, offering unprecedented opportunities for businesses to connect with their audiences in meaningful ways.
-
-## Key Benefits
-- **Personalization at Scale**: AI enables hyper-personalized content delivery
-- **Data-Driven Insights**: Advanced analytics reveal customer behavior patterns  
-- **Automation Efficiency**: Streamlined workflows increase productivity
-- **ROI Optimization**: Smart budget allocation maximizes campaign effectiveness
-
-## Implementation Strategies
-1. Start with clear objectives and KPIs
-2. Integrate AI tools gradually into existing workflows
-3. Train teams on new technologies and processes
-4. Monitor performance and optimize continuously
-
-## Conclusion
-The integration of AI in marketing represents a paradigm shift that forward-thinking businesses cannot afford to ignore. By embracing these technologies now, companies position themselves for sustained growth and competitive advantage.
-
-*Ready to transform your marketing with AI? Contact us to learn more about our comprehensive solutions.*`,
-          summary: 'Comprehensive guide to implementing AI-powered marketing strategies for modern businesses.',
-          seoKeywords: ['AI marketing', 'digital transformation', 'marketing automation', 'data analytics'],
-          readabilityScore: 85,
-          platforms: [],
-          metadata: {
-            contentType: 'blog',
-            generationMethod: 'demo-mode',
-            totalAgents: 5,
-            executionTime: 60000,
-            qualityMode: 'demo'
-          }
-        },
-        qualityScores: {
-          overall: 0.9,
-          content: 0.88,
-          seo: 0.92,
-          engagement: 0.87,
-          brand: 0.85
-        }
-      });
-    }
 
     // Fall back to legacy workflow
     const legacyWorkflow = ContentWorkflow.getInstance(workflowId);

@@ -272,67 +272,167 @@ FORMAT REQUIREMENTS:
     conclusion: string;
     callToAction: string;
   } {
+    // Generate more specific content based on the topic
+    const contentMap = this.getTopicSpecificContent(topic, audience);
+    
     return {
-      introduction: `In today's rapidly evolving business landscape, understanding ${topic} has become essential for ${audience}. This comprehensive guide explores the key strategies, best practices, and actionable insights that will help you leverage ${topic} effectively to achieve your goals and drive meaningful results.`,
+      introduction: contentMap.introduction,
+      
+      sections: contentMap.sections,
+      conclusion: contentMap.conclusion,
+      callToAction: contentMap.callToAction
+    };
+  }
+
+  private getTopicSpecificContent(topic: string, audience: string) {
+    const topicLower = topic.toLowerCase();
+    
+    // AI Marketing specific content
+    if (topicLower.includes('ai') && (topicLower.includes('marketing') || topicLower.includes('automation'))) {
+      return {
+        introduction: `The marketing landscape is undergoing a dramatic transformation. ${topic} is revolutionizing how businesses connect with customers, optimize campaigns, and drive growth. For ${audience}, understanding and implementing AI-powered marketing strategies isn't just an opportunity—it's becoming essential for competitive survival. This comprehensive guide explores the cutting-edge strategies, tools, and best practices that will help you harness the full potential of ${topic} to achieve unprecedented marketing results.`,
+        
+        sections: [
+          {
+            heading: `The AI Marketing Revolution: Understanding ${topic}`,
+            paragraphs: [
+              `${topic} represents the convergence of artificial intelligence, machine learning, and marketing expertise. Unlike traditional marketing approaches, AI-powered strategies can analyze vast amounts of customer data in real-time, predict behavior patterns, and automatically optimize campaigns for maximum ROI.`,
+              `The transformation is already underway. Leading companies are using AI to personalize customer experiences at scale, automate repetitive tasks, and uncover insights that would be impossible to detect manually. For ${audience}, the question isn't whether to adopt AI marketing—it's how quickly you can implement it effectively.`
+            ],
+            bulletPoints: [
+              `Machine learning algorithms for predictive analytics`,
+              `Natural language processing for content optimization`,  
+              `Computer vision for visual content analysis`,
+              `Automated A/B testing and campaign optimization`,
+              `Real-time personalization at scale`
+            ]
+          },
+          {
+            heading: `Strategic Implementation of ${topic} for ${audience}`,
+            paragraphs: [
+              `Successful implementation of ${topic} requires a strategic approach that aligns with your specific business objectives and customer needs. The most effective implementations start with clear goals, quality data, and a commitment to continuous optimization.`,
+              `${audience} who excel at AI marketing focus on three key areas: data quality and integration, choosing the right AI tools for their specific needs, and building internal capabilities to maximize AI's potential. The companies that get this right see dramatic improvements in customer acquisition costs, lifetime value, and overall marketing ROI.`
+            ],
+            bulletPoints: [
+              `Customer data platform integration and management`,
+              `Marketing automation workflow optimization`,
+              `Predictive analytics for customer behavior`,
+              `Cross-channel campaign orchestration`,
+              `Performance measurement and attribution modeling`
+            ]
+          },
+          {
+            heading: `Essential AI Marketing Tools and Technologies`,
+            paragraphs: [
+              `The AI marketing technology stack has evolved rapidly, offering powerful solutions for every aspect of the customer journey. From lead generation and nurturing to retention and advocacy, AI tools can enhance performance across all marketing functions.`,
+              `The key is selecting tools that integrate well with your existing systems and provide measurable value. The most successful implementations combine multiple AI capabilities—predictive analytics, content optimization, automated bidding, and personalization—into a cohesive marketing ecosystem.`
+            ],
+            bulletPoints: [
+              `Predictive lead scoring and customer segmentation`,
+              `Automated content generation and optimization`,
+              `Dynamic pricing and promotional strategies`,
+              `Chatbots and conversational AI for customer service`,
+              `Advanced attribution and marketing mix modeling`
+            ]
+          },
+          {
+            heading: `Measuring ROI and Optimizing ${topic} Performance`,
+            paragraphs: [
+              `The true value of AI marketing lies in its measurable impact on business results. Unlike traditional marketing metrics, AI enables more sophisticated measurement approaches that account for complex customer journeys and multi-touch attribution.`,
+              `Leading organizations track both traditional metrics (conversion rates, customer acquisition costs) and AI-specific indicators (model accuracy, automation efficiency, personalization effectiveness). This comprehensive approach ensures that AI investments deliver tangible business value while continuously improving over time.`
+            ],
+            bulletPoints: [
+              `Advanced attribution modeling across all touchpoints`,
+              `Customer lifetime value prediction and optimization`,
+              `Marketing mix modeling for budget allocation`,
+              `Real-time campaign performance monitoring`,
+              `Predictive analytics for future campaign planning`
+            ]
+          },
+          {
+            heading: `Future-Proofing Your AI Marketing Strategy`,
+            paragraphs: [
+              `${topic} is evolving rapidly, with new capabilities and applications emerging regularly. To stay competitive, ${audience} must build adaptable strategies that can incorporate new AI advances while maintaining operational excellence.`,
+              `The most successful organizations view AI marketing as an ongoing journey of experimentation, learning, and optimization. They invest in team training, maintain flexible technology stacks, and foster cultures of data-driven decision making that will serve them well as AI continues to evolve.`
+            ],
+            bulletPoints: [
+              `Continuous learning and team development programs`,
+              `Agile marketing processes for rapid experimentation`,
+              `Privacy-first data strategies and compliance`,
+              `Integration planning for emerging AI technologies`,
+              `Long-term competitive advantage through AI mastery`
+            ]
+          }
+        ],
+        
+        conclusion: `${topic} represents one of the most significant opportunities in modern marketing. For ${audience}, the potential to transform customer experiences, optimize campaign performance, and drive unprecedented growth is within reach. The strategies and insights outlined in this guide provide a roadmap for success, but the real value comes from implementation and continuous optimization. Start with small pilots, measure results rigorously, and scale what works. The future of marketing is here—and it's powered by AI.`,
+        
+        callToAction: `Ready to transform your marketing with AI? Start your ${topic} journey today. Contact our team of AI marketing experts to develop a custom strategy that delivers measurable results for your business. The competitive advantage of early AI adoption is significant—don't let your competitors get ahead.`
+      };
+    }
+    
+    // Default fallback for any other topic
+    return {
+      introduction: `In today's competitive business environment, mastering ${topic} has become crucial for ${audience}. This comprehensive guide explores proven strategies, emerging trends, and actionable insights that will help you leverage ${topic} effectively to achieve your business objectives and drive sustainable growth.`,
       
       sections: [
         {
           heading: `Understanding the Fundamentals of ${topic}`,
           paragraphs: [
-            `Before diving into advanced strategies, it's crucial to establish a solid foundation. ${topic} encompasses various elements that work together to create a comprehensive approach to business success.`,
-            `The key to mastering ${topic} lies in understanding how these different components interact and influence each other. By taking a holistic view, you can develop strategies that are both effective and sustainable.`
+            `${topic} encompasses a broad range of strategies, technologies, and methodologies that work together to create competitive advantages. For ${audience}, understanding these fundamentals is the first step toward successful implementation.`,
+            `The most successful organizations approach ${topic} systematically, building strong foundations before advancing to more sophisticated applications. This methodical approach ensures sustainable results and positions you for long-term success.`
           ],
           bulletPoints: [
-            `Core principles and concepts`,
-            `Industry best practices`,
-            `Common misconceptions to avoid`,
+            `Core principles and best practices`,
+            `Industry standards and benchmarks`,
+            `Common challenges and solutions`,
             `Essential tools and resources`
           ]
         },
         {
-          heading: `Proven Strategies for ${audience}`,
+          heading: `Strategic Implementation for ${audience}`,
           paragraphs: [
-            `When it comes to implementing ${topic} effectively, ${audience} face unique challenges and opportunities. The strategies that work best are those that acknowledge these specific circumstances and provide tailored solutions.`,
-            `Research shows that organizations that take a strategic approach to ${topic} see significantly better results than those that rely on ad-hoc methods. Here are the proven approaches that consistently deliver success.`
+            `${audience} face unique opportunities and challenges when implementing ${topic}. The strategies that deliver the best results are those specifically tailored to your industry context, organizational culture, and business objectives.`,
+            `Research consistently shows that organizations with strategic approaches to ${topic} significantly outperform those using ad-hoc methods. The key is developing a comprehensive plan that addresses both immediate needs and long-term goals.`
           ],
           bulletPoints: [
             `Customized implementation strategies`,
-            `Risk management and mitigation`,
-            `Performance measurement and optimization`,
-            `Scalable solutions for growth`
+            `Risk assessment and mitigation plans`,
+            `Performance measurement frameworks`,
+            `Scalable growth approaches`
           ]
         },
         {
-          heading: `Implementation Best Practices`,
+          heading: `Best Practices and Proven Methodologies`,
           paragraphs: [
-            `Successful implementation of ${topic} requires careful planning, proper execution, and continuous optimization. The most successful organizations follow a systematic approach that ensures both short-term wins and long-term success.`,
-            `By following these best practices, you can avoid common pitfalls and maximize your chances of achieving exceptional results with ${topic}.`
+            `Successful implementation of ${topic} requires adherence to proven methodologies and industry best practices. These approaches have been refined through real-world application and demonstrate consistent results across various organizational contexts.`,
+            `The most effective implementations combine strategic planning with tactical execution, supported by continuous monitoring and optimization. This approach ensures both immediate wins and sustainable long-term success.`
           ],
           bulletPoints: [
-            `Step-by-step implementation guide`,
-            `Timeline and milestone planning`,
-            `Team training and development`,
+            `Step-by-step implementation guides`,
+            `Quality assurance and testing protocols`,
+            `Team training and development programs`,
             `Continuous improvement processes`
           ]
         },
         {
-          heading: `Measuring Success and ROI`,
+          heading: `Measuring Success and Maximizing ROI`,
           paragraphs: [
-            `To truly understand the impact of your ${topic} initiatives, you need robust measurement and analysis systems. The most successful organizations use a combination of quantitative and qualitative metrics to track progress and identify opportunities for improvement.`,
-            `By establishing clear KPIs and regularly monitoring your progress, you can make data-driven decisions that optimize your ${topic} strategy for maximum impact.`
+            `To truly understand the impact of your ${topic} initiatives, robust measurement and analysis systems are essential. The most successful organizations use comprehensive metrics that capture both quantitative results and qualitative improvements.`,
+            `Effective measurement goes beyond basic metrics to include leading indicators, predictive analytics, and comprehensive ROI calculations. This data-driven approach enables informed decision-making and continuous optimization.`
           ],
           bulletPoints: [
-            `Key performance indicators (KPIs)`,
-            `Data collection and analysis methods`,
-            `Reporting and dashboard creation`,
-            `ROI calculation and optimization`
+            `Key performance indicators and benchmarks`,
+            `Advanced analytics and reporting systems`,
+            `ROI calculation and business impact assessment`,
+            `Predictive modeling for future planning`
           ]
         }
       ],
       
-      conclusion: `${topic} represents a significant opportunity for ${audience} to achieve their goals and drive meaningful business results. By following the strategies and best practices outlined in this guide, you'll be well-equipped to implement effective ${topic} initiatives that deliver both immediate value and long-term success. Remember that success with ${topic} is a journey, not a destination – continue learning, adapting, and optimizing your approach as you grow.`,
+      conclusion: `${topic} offers significant opportunities for ${audience} to achieve competitive advantages and drive meaningful business results. The strategies, methodologies, and best practices outlined in this guide provide a comprehensive framework for success. Implementation is key—start with pilot programs, measure results carefully, and scale successful approaches. With the right strategy and commitment to excellence, ${topic} can transform your business outcomes.`,
       
-      callToAction: `Ready to take your ${topic} strategy to the next level? Start implementing these proven strategies today and discover the transformative power of ${topic} for your business. Contact our team of experts to learn how we can help you achieve exceptional results.`
+      callToAction: `Ready to unlock the full potential of ${topic} for your organization? Our team of experts specializes in helping ${audience} implement successful ${topic} strategies. Contact us today to develop a customized approach that delivers measurable results and sustainable competitive advantages.`
     };
   }
 
