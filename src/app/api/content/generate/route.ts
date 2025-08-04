@@ -46,37 +46,56 @@ export async function POST(request: NextRequest) {
     // Store initial status for persistence
     await enhancedWorkflow.persistStatus();
     
-    // Trigger background processing immediately (non-blocking)
-    setTimeout(async () => {
-      try {
-        console.log(`🔄 Starting background processing for workflow ${workflowId}`);
-        await enhancedWorkflow.executeWorkflowInBackground(workflowId);
-        console.log(`✅ Background processing completed for workflow ${workflowId}`);
-      } catch (error) {
-        console.error(`❌ Background processing failed for workflow ${workflowId}:`, error);
-        enhancedWorkflow.markAsFailed(error instanceof Error ? error.message : 'Unknown error');
-      }
-    }, 100); // Start immediately but asynchronously
+    // Execute workflow synchronously within the serverless function
+    console.log(`🔄 Starting workflow execution for ${workflowId}`);
     
-    // Return 202 Accepted immediately (standard background function pattern)
-    return NextResponse.json({
-      workflowId,
-      status: 'started',
-      workflowType: 'enhanced-background',
-      estimatedTime: options.maxExecutionTime / 60, // Convert to minutes
-      agents: [
-        { agentId: 'market-researcher', status: 'pending', progress: 0 },
-        { agentId: 'audience-analyzer', status: 'pending', progress: 0 },
-        { agentId: 'ai-seo-optimizer', status: 'pending', progress: 0 },
-        { agentId: 'content-strategist', status: 'pending', progress: 0 },
-        { agentId: 'content-writer', status: 'pending', progress: 0 },
-        { agentId: 'content-editor', status: 'pending', progress: 0 },
-        { agentId: 'social-media-specialist', status: 'pending', progress: 0 },
-        { agentId: 'landing-page-specialist', status: 'pending', progress: 0 },
-        { agentId: 'performance-analyst', status: 'pending', progress: 0 }
-      ],
-      options: options
-    }, { status: 202 }); // 202 Accepted for background processing
+    try {
+      // Execute the workflow and wait for completion (within 5 minute Netlify limit)
+      await enhancedWorkflow.executeWorkflowInBackground(workflowId);
+      
+      // Get the final status
+      const finalStatus = await enhancedWorkflow.getStatus();
+      
+      console.log(`✅ Workflow completed successfully: ${workflowId}`);
+      
+      // Return the completed workflow
+      return NextResponse.json({
+        workflowId,
+        status: finalStatus.status,
+        workflowType: 'enhanced-synchronous',
+        content: finalStatus.content,
+        qualityScores: finalStatus.qualityScores,
+        agents: finalStatus.agents,
+        startTime: finalStatus.startTime,
+        endTime: finalStatus.endTime,
+        progress: finalStatus.progress,
+        options: options
+      }, { status: 200 });
+      
+    } catch (error) {
+      console.error(`❌ Workflow execution failed for ${workflowId}:`, error);
+      
+      await enhancedWorkflow.markAsFailed(error instanceof Error ? error.message : 'Unknown error');
+      
+      return NextResponse.json({
+        workflowId,
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        workflowType: 'enhanced-synchronous-failed',
+        agents: [
+          { agentId: 'market-researcher', status: 'failed', progress: 0 },
+          { agentId: 'audience-analyzer', status: 'failed', progress: 0 },
+          { agentId: 'ai-seo-optimizer', status: 'failed', progress: 0 },
+          { agentId: 'content-strategist', status: 'failed', progress: 0 },
+          { agentId: 'content-writer', status: 'failed', progress: 0 },
+          { agentId: 'content-editor', status: 'failed', progress: 0 },
+          { agentId: 'social-media-specialist', status: 'failed', progress: 0 },
+          { agentId: 'landing-page-specialist', status: 'failed', progress: 0 },
+          { agentId: 'performance-analyst', status: 'failed', progress: 0 }
+        ],
+        options: options
+      }, { status: 500 });
+    }
 
   } catch (error) {
     console.error('Content generation startup error:', error);
