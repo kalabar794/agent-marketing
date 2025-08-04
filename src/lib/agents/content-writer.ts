@@ -90,28 +90,41 @@ export class ContentWriter extends BaseAgent {
     const prompt = this.buildPrompt(request, marketResearch, audienceAnalysis, contentStrategy, seoOptimization);
     
     try {
+      this.logExecution('Starting Claude API call for comprehensive content generation', {
+        promptLength: prompt.length,
+        requestedLength: (request as any).length || 'comprehensive'
+      });
+      
       const response = await this.callLLM(prompt, {
-        maxTokens: 8192, // Industry standard for comprehensive marketing content (1500-2000 words)
+        maxTokens: 16384, // Increased for comprehensive 1500-2500 word content generation
         temperature: 0.3, // Optimized for consistent, high-quality marketing copy
         systemPrompt: `You are a professional marketing content writer specializing in comprehensive, long-form content.
         
-CREATE COMPREHENSIVE CONTENT:
-        - Write detailed, valuable content of 1500-2000+ words when creating blog posts
-        - Include actionable insights, examples, and practical advice
+CRITICAL: CREATE COMPREHENSIVE LONG-FORM CONTENT:
+        - Write detailed, valuable content of 1500-2500+ words for blog posts (NON-NEGOTIABLE MINIMUM)
+        - Each section must contain 200-300 words of detailed content with examples
+        - Include actionable insights, case studies, and practical step-by-step advice
         - Structure content with clear sections and smooth transitions
         - Focus on providing genuine value to the target audience
         
 FORMAT REQUIREMENTS:
         - Always respond with valid JSON in the exact format requested
-        - Ensure content is well-structured and professionally written
-        - Include compelling headlines and engaging introductions`
+        - Ensure each section.content field contains 200+ words of comprehensive information
+        - Include compelling headlines and engaging introductions
+        - NEVER provide brief summaries - write full detailed content for each section`
+      });
+      
+      this.logExecution('Claude API response received', {
+        responseLength: response.length,
+        responsePreview: response.substring(0, 500) + '...'
       });
       
       const result = this.parseResponse(response);
       this.logExecution('Content writing completed', { 
         wordCount: result.metadata.wordCount,
         sections: result.content.mainContent.length,
-        title: result.content.title
+        title: result.content.title,
+        actualContentLength: result.content.mainContent.map(s => s.paragraphs.join(' ').length).reduce((a, b) => a + b, 0)
       });
       
       return result;
@@ -237,7 +250,19 @@ Focus on creating high-quality, original content that provides genuine value to 
 
   private parseResponse(response: string): ContentWriterOutput {
     try {
+      this.logExecution('Parsing Claude response', {
+        responseLength: response.length,
+        responseStart: response.substring(0, 200)
+      });
+      
       const parsed = this.extractJSONFromResponse(response);
+      
+      this.logExecution('JSON extracted successfully', {
+        parsedKeys: Object.keys(parsed),
+        sectionsCount: parsed.sections?.length || 0,
+        titleLength: parsed.title?.length || 0,
+        introductionLength: parsed.introduction?.length || 0
+      });
       
       // Validate core fields from simplified response
       this.validateRequiredFields(parsed, [
@@ -322,8 +347,12 @@ Focus on creating high-quality, original content that provides genuine value to 
 
       return this.sanitizeOutput(result) as ContentWriterOutput;
     } catch (error) {
-      this.logExecution('JSON parsing failed - no fallback available', { error: error.message });
-      throw new Error(`Content Writer JSON parsing failed: ${error.message}. No fallback parsing available - Claude API must return valid JSON.`);
+      this.logExecution('JSON parsing failed - no fallback available', { 
+        error: error.message,
+        responseLength: response.length,
+        responsePreview: response.substring(0, 1000)
+      });
+      throw new Error(`Content Writer JSON parsing failed: ${error.message}. Response preview: ${response.substring(0, 500)}... No fallback parsing available - Claude API must return valid JSON.`);
     }
   }
 
