@@ -35,11 +35,13 @@ function validateApiKey(apiKey: string | undefined): string {
 }
 
 function createConfig(): Config {
-  // During build time, allow missing API key
-  const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.ANTHROPIC_API_KEY;
+  // During build time (Next.js build phase), defer API key validation
+  // Check for Next.js build phase or missing API key in production
+  const isNextBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
+  const isBuildTime = isNextBuildPhase || (process.env.NODE_ENV === 'production' && !process.env.ANTHROPIC_API_KEY);
   
   if (isBuildTime) {
-    console.log('🏗️ Build time detected - deferring API key validation to runtime');
+    console.log('🏗️ Build phase detected - deferring API key validation to runtime');
     return {
       anthropicApiKey: '', // Empty string during build
       nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
@@ -47,23 +49,34 @@ function createConfig(): Config {
     };
   }
 
-  try {
-    return {
-      anthropicApiKey: validateApiKey(process.env.ANTHROPIC_API_KEY),
-      nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-      nodeEnv: process.env.NODE_ENV || 'development',
-    };
-  } catch (error) {
-    if (error instanceof ConfigError) {
-      console.error('❌ Configuration Error:', error.message);
-      console.error('💡 Setup Instructions:');
-      console.error('   1. Copy .env.example to .env.local');
-      console.error('   2. Add your Anthropic API key from https://console.anthropic.com/');
-      console.error('   3. Restart the development server');
+  // During development or when API key is available, validate it
+  if (process.env.NODE_ENV === 'development' && process.env.ANTHROPIC_API_KEY) {
+    try {
+      return {
+        anthropicApiKey: validateApiKey(process.env.ANTHROPIC_API_KEY),
+        nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        nodeEnv: process.env.NODE_ENV || 'development',
+      };
+    } catch (error) {
+      if (error instanceof ConfigError) {
+        console.error('❌ Configuration Error:', error.message);
+        console.error('💡 Setup Instructions:');
+        console.error('   1. Copy .env.example to .env.local');
+        console.error('   2. Add your Anthropic API key from https://console.anthropic.com/');
+        console.error('   3. Restart the development server');
+        throw error;
+      }
       throw error;
     }
-    throw error;
   }
+
+  // Default: defer validation
+  console.log('🏗️ Deferring API key validation to runtime');
+  return {
+    anthropicApiKey: '', // Empty string, will be validated at runtime
+    nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    nodeEnv: process.env.NODE_ENV || 'development',
+  };
 }
 
 // Export the configuration
