@@ -763,6 +763,14 @@ export class EnhancedContentWorkflow {
             await new Promise(resolve => setTimeout(resolve, stepDuration));
             this.status.agents[agentIndex].progress = Math.round((step / steps) * 100);
             this.status.progress = Math.round(((i * steps + step) / (agents.length * steps)) * 100);
+            
+            // Persist progress updates to storage during demo
+            try {
+              await this.storage.saveWorkflowStatus(this.id, this.status);
+              await this.updatePersistedStatus();
+            } catch (error) {
+              console.warn('Failed to persist demo progress:', error);
+            }
           }
           
           // Mark as completed

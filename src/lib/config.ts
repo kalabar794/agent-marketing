@@ -16,23 +16,21 @@ class ConfigError extends Error {
 }
 
 function validateApiKey(apiKey: string | undefined): string {
-  // Allow missing API key - will use demo mode
-  if (!apiKey) {
-    console.log('🎭 ANTHROPIC_API_KEY not found - will use demo mode');
-    return '';
+  // Require API key - no demo mode
+  if (!apiKey || apiKey.trim() === '') {
+    throw new ConfigError('ANTHROPIC_API_KEY is required. Please add your Anthropic API key to .env.local');
   }
 
-  // Relax validation - accept various Anthropic key formats
+  // Validate Anthropic key format
   if (!apiKey.startsWith('sk-ant-')) {
-    console.log('🎭 Unexpected API key format - will attempt to use but may fail');
-    // Don't throw error, let API call fail naturally if invalid
+    throw new ConfigError('Invalid ANTHROPIC_API_KEY format. Expected key starting with "sk-ant-"');
   }
 
-  if (apiKey.length < 30) {
-    console.log('🎭 API key appears short - will attempt to use but may fail');
-    // Don't throw error, let API call fail naturally if invalid
+  if (apiKey.length < 50) {
+    throw new ConfigError('ANTHROPIC_API_KEY appears to be too short. Please check your API key.');
   }
 
+  console.log('✅ ANTHROPIC_API_KEY validated successfully');
   return apiKey;
 }
 

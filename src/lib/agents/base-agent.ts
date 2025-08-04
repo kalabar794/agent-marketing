@@ -23,11 +23,8 @@ export abstract class BaseAgent {
     systemPrompt?: string;
   }): Promise<string> {
     
-    // Quick fail if no API key configured
-    if (!config.anthropicApiKey || config.anthropicApiKey === '') {
-      console.log(`${this.agentName}: No API key configured, using fallback`);
-      throw new Error('API key not configured - using fallback');
-    }
+    // API key is validated at config load time - no need to check again
+    console.log(`[${this.agentName}] Starting LLM call with validated API key`);
 
     const {
       model = 'claude-sonnet-4-20250514', // Use Claude Sonnet 4 (latest)
@@ -124,12 +121,8 @@ export abstract class BaseAgent {
   }
 
   protected async callLLMWithFallback(prompt: string, fallbackResponse: any): Promise<string> {
-    try {
-      return await this.callLLM(prompt);
-    } catch (error) {
-      console.error(`${this.agentName} LLM call failed, using fallback:`, error);
-      return JSON.stringify(fallbackResponse);
-    }
+    // No more fallbacks - let real errors surface
+    return await this.callLLM(prompt);
   }
 
   protected extractJSONFromResponse(response: string): any {
