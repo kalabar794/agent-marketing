@@ -5,9 +5,9 @@ import Anthropic from '@anthropic-ai/sdk';
 export abstract class BaseAgent {
   protected agentName: string;
   protected maxRetries: number = 3;
-  protected timeout: number = 180000; // 3 minutes timeout for comprehensive content generation
-  protected usePromptCaching: boolean = true;
-  protected maxOutputTokens: number = 8192; // Industry standard for comprehensive marketing content (1500-2000 words)
+  protected timeout: number = 8000; // 8 seconds to fit within Netlify 10-second limit
+  protected usePromptCaching: boolean = false; // Disable caching for faster responses
+  protected maxOutputTokens: number = 1000; // Reduced for speed - still allows ~750 words
 
   constructor(agentName: string) {
     this.agentName = agentName;
@@ -28,9 +28,9 @@ export abstract class BaseAgent {
     console.log(`[${this.agentName}] Starting LLM call with validated API key`);
 
     const {
-      model = 'claude-sonnet-4-20250514', // Use Claude Sonnet 4 (latest)
-      maxTokens = this.maxOutputTokens, // Use full token allowance for comprehensive content
-      temperature = 0.3, // Optimized for consistent, high-quality marketing copy
+      model = 'claude-3-haiku-20240307', // Use Claude Haiku for speed
+      maxTokens = this.maxOutputTokens, // Reduced token count for faster generation
+      temperature = 0.7, // Higher temperature for faster, more creative responses
       useTools = false,
       systemPrompt
     } = options || {};

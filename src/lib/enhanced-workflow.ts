@@ -1,5 +1,5 @@
 import { ContentGenerationRequest, WorkflowStatus, AgentResponse, GeneratedContent, QualityScores } from '@/types/content';
-import { EnhancedOrchestrator } from './agents/enhanced-orchestrator';
+import { FastOrchestrator } from './agents/fast-orchestrator';
 import { EvaluatorOptimizer } from './quality/evaluator-optimizer';
 import { DynamicTaskDelegator } from './agents/dynamic-task-delegator';
 import { ErrorRecoveryManager } from './resilience/error-recovery';
@@ -76,7 +76,7 @@ export class EnhancedContentWorkflow {
   private options: EnhancedWorkflowOptions;
   private status: WorkflowStatus;
   
-  private orchestrator: EnhancedOrchestrator;
+  private orchestrator: FastOrchestrator;
   private evaluator: EvaluatorOptimizer;
   private delegator: DynamicTaskDelegator;
   private errorRecovery: ErrorRecoveryManager;
@@ -92,11 +92,11 @@ export class EnhancedContentWorkflow {
       priorityMode: 'balanced',
       enableOptimization: true,
       maxOptimizationCycles: 2,
-      enableFallbacks: true,
+      enableFallbacks: false, // CRITICAL: User directive - no fallback content ever
       ...options
     };
     
-    this.orchestrator = new EnhancedOrchestrator();
+    this.orchestrator = new FastOrchestrator();
     this.evaluator = new EvaluatorOptimizer();
     this.delegator = new DynamicTaskDelegator();
     this.errorRecovery = new ErrorRecoveryManager();
