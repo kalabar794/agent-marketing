@@ -14,9 +14,7 @@ const nextConfig: NextConfig = {
   },
   // Force dynamic rendering for all pages since we need API calls
   output: 'standalone',
-  experimental: {
-    serverComponentsExternalPackages: ['@anthropic-ai/sdk']
-  }
+  serverExternalPackages: ['@anthropic-ai/sdk']
 };
 
 export default nextConfig;
