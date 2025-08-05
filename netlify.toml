@@ -8,6 +8,14 @@
 [functions]
   node_bundler = "esbuild"
   
-# Enable longer timeouts for AI content generation
+# Next.js API route for job creation (delegates to background function)
 [functions."api/content/generate"]
-  timeout = 900  # 15 minutes for background processing
+  timeout = 60  # 1 minute for job creation (background function handles actual processing)
+
+# Next.js API route for SSE status monitoring  
+[functions."api/content/status/[jobId]"]
+  timeout = 60  # 1 minute for status checks with SSE support
+
+# Background function for multi-agent AI processing  
+[functions."content-generate-background"]
+  timeout = 900  # 15 minutes for full multi-agent workflow
