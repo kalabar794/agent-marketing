@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     try {
       console.log(`🔄 Triggering background function for job ${jobId}`);
       
-      const backgroundResponse = await fetch(`${process.env.NETLIFY_SITE_URL || 'https://jonathoncarter.com'}/.netlify/functions/content-generate-background`, {
+      const backgroundResponse = await fetch(`${process.env.NETLIFY_SITE_URL || 'https://agentic-marketing-generator.netlify.app'}/.netlify/functions/content-generate-background`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
