@@ -49,22 +49,58 @@ export class AudienceAnalyzer extends BaseAgent {
   }
 
   public async execute(request: ContentGenerationRequest, context: any): Promise<AudienceAnalysisOutput> {
+    console.log(`👥 [AudienceAnalyzer] Starting execute() - timestamp: ${new Date().toISOString()}`);
+    console.log(`👥 [AudienceAnalyzer] Request details:`, {
+      topic: request.topic,
+      audience: request.targetAudience,
+      contentType: request.contentType
+    });
+    
     this.logExecution('Starting audience analysis');
     
+    console.log(`👥 [AudienceAnalyzer] Step 1: Getting market research context...`);
     const marketResearch = context.previousOutputs?.['market-researcher'] as MarketResearchOutput;
+    console.log(`👥 [AudienceAnalyzer] Step 1 completed: Market research context`, {
+      hasMarketResearch: !!marketResearch,
+      industry: marketResearch?.industry || 'none'
+    });
+    
+    console.log(`👥 [AudienceAnalyzer] Step 2: Building prompt...`);
     const prompt = this.buildPrompt(request, marketResearch);
+    console.log(`👥 [AudienceAnalyzer] Step 2 completed: Prompt built (${prompt.length} chars)`);
     
     try {
+      console.log(`👥 [AudienceAnalyzer] Step 3: Calling LLM...`);
+      console.log(`👥 [AudienceAnalyzer] Step 3a: Pre-callLLM timestamp: ${new Date().toISOString()}`);
+      
       const response = await this.callLLM(prompt, {
         maxTokens: 4000,
         temperature: 0.6
       });
       
+      console.log(`👥 [AudienceAnalyzer] Step 3b: Post-callLLM timestamp: ${new Date().toISOString()}`);
+      console.log(`👥 [AudienceAnalyzer] Step 3 completed: LLM response received (${response.length} chars)`);
+      
+      console.log(`👥 [AudienceAnalyzer] Step 4: Parsing response...`);
       const result = this.parseResponse(response);
+      console.log(`👥 [AudienceAnalyzer] Step 4 completed: Response parsed successfully`);
+      console.log(`👥 [AudienceAnalyzer] Final result summary:`, {
+        primaryPersonaName: result.primaryPersona.name,
+        secondaryPersonasCount: result.secondaryPersonas.length,
+        hasRecommendations: !!result.recommendations
+      });
+      
       this.logExecution('Audience analysis completed', { personaCount: result.secondaryPersonas.length + 1 });
       
+      console.log(`👥 [AudienceAnalyzer] Execute completed successfully - timestamp: ${new Date().toISOString()}`);
       return result;
     } catch (error) {
+      console.error(`❌ [AudienceAnalyzer] Execute failed - timestamp: ${new Date().toISOString()}`, error);
+      console.error(`❌ [AudienceAnalyzer] Error details:`, {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
       this.logExecution('Audience analysis failed', { error: error.message });
       throw new Error(`Audience analysis failed: ${error}`);
     }

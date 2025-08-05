@@ -20,11 +20,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate workflow ID immediately
-    const workflowId = `enhanced-workflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate job ID in format expected by monitoring page
+    const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Config validation ensures API key is present - no demo mode needed
-    console.log('🚀 Starting Real AI Content Workflow with validated API key');
+    console.log(`🚀 Creating background job: ${jobId}`);
 
     // Extract workflow options from request
     const options = {
@@ -35,64 +34,75 @@ export async function POST(request: NextRequest) {
       enableFallbacks: body.enableFallbacks !== false
     };
     
-    console.log('🚀 Starting Background Content Workflow');
+    // Initialize job storage
+    const { getJobStorage } = await import('@/lib/storage/job-storage');
+    const storage = getJobStorage();
     
-    // Create enhanced workflow instance
-    const enhancedWorkflow = new EnhancedContentWorkflow(body, options);
+    // Store initial job status
+    await storage.saveJobStatus(jobId, {
+      jobId,
+      status: 'queued',
+      message: 'Job queued for processing...',
+      progress: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
     
-    // Store workflow instance for later retrieval
-    EnhancedContentWorkflow.setInstance(workflowId, enhancedWorkflow);
+    console.log(`📋 Job ${jobId} queued successfully`);
     
-    // Store initial status for persistence
-    await enhancedWorkflow.persistStatus();
-    
-    // Execute workflow synchronously within the serverless function
-    console.log(`🔄 Starting workflow execution for ${workflowId}`);
-    
+    // Call background function to process the job
     try {
-      // Execute the workflow and wait for completion (within 5 minute Netlify limit)
-      await enhancedWorkflow.executeWorkflowInBackground(workflowId);
+      console.log(`🔄 Triggering background function for job ${jobId}`);
       
-      // Get the final status
-      const finalStatus = await enhancedWorkflow.getStatus();
+      const backgroundResponse = await fetch(`${process.env.NETLIFY_SITE_URL || 'https://jonathoncarter.com'}/.netlify/functions/content-generate-background`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jobId,
+          request: body,
+          options
+        })
+      });
       
-      console.log(`✅ Workflow completed successfully: ${workflowId}`);
+      if (!backgroundResponse.ok) {
+        console.error(`❌ Background function call failed: ${backgroundResponse.status} ${backgroundResponse.statusText}`);
+        throw new Error(`Background function call failed: ${backgroundResponse.status} ${backgroundResponse.statusText}`);
+      }
       
-      // Return the completed workflow
+      console.log(`✅ Background function triggered successfully for job ${jobId}`);
+      
+      // Return immediately with job ID for monitoring
       return NextResponse.json({
-        workflowId,
-        status: finalStatus.status,
-        workflowType: 'enhanced-synchronous',
-        content: finalStatus.content,
-        qualityScores: finalStatus.qualityScores,
-        agents: finalStatus.agents,
-        startTime: finalStatus.startTime,
-        endTime: finalStatus.endTime,
-        progress: finalStatus.progress,
+        success: true,
+        jobId,
+        status: 'queued',
+        message: 'Job queued for background processing',
+        workflowType: 'enhanced-background',
         options: options
-      }, { status: 200 });
+      }, { status: 202 }); // 202 Accepted - request accepted for processing
       
     } catch (error) {
-      console.error(`❌ Workflow execution failed for ${workflowId}:`, error);
+      console.error(`❌ Failed to trigger background function for job ${jobId}:`, error);
       
-      await enhancedWorkflow.markAsFailed(error instanceof Error ? error.message : 'Unknown error');
+      // Update job status to failed
+      await storage.saveJobStatus(jobId, {
+        jobId,
+        status: 'failed',
+        message: 'Failed to start background processing',
+        progress: 0,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
       
       return NextResponse.json({
-        workflowId,
+        success: false,
+        jobId,
         status: 'failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        workflowType: 'enhanced-synchronous-failed',
-        agents: [
-          { agentId: 'market-researcher', status: 'failed', progress: 0 },
-          { agentId: 'audience-analyzer', status: 'failed', progress: 0 },
-          { agentId: 'ai-seo-optimizer', status: 'failed', progress: 0 },
-          { agentId: 'content-strategist', status: 'failed', progress: 0 },
-          { agentId: 'content-writer', status: 'failed', progress: 0 },
-          { agentId: 'content-editor', status: 'failed', progress: 0 },
-          { agentId: 'social-media-specialist', status: 'failed', progress: 0 },
-          { agentId: 'landing-page-specialist', status: 'failed', progress: 0 },
-          { agentId: 'performance-analyst', status: 'failed', progress: 0 }
-        ],
+        error: error instanceof Error ? error.message : 'Failed to start background processing',
+        workflowType: 'enhanced-background-failed',
         options: options
       }, { status: 500 });
     }
@@ -109,157 +119,83 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const workflowId = searchParams.get('workflowId');
+    const jobId = searchParams.get('workflowId') || searchParams.get('jobId');
     
-    if (!workflowId) {
+    if (!jobId) {
       return NextResponse.json(
-        { error: 'Missing workflowId parameter' },
+        { error: 'Missing jobId or workflowId parameter' },
         { status: 400 }
       );
     }
 
-    console.log(`📊 Status check for workflow: ${workflowId}`);
+    console.log(`📊 Status check for job: ${jobId}`);
 
-    // Try to find enhanced workflow first (in-memory)
-    const enhancedWorkflow = EnhancedContentWorkflow.getInstance(workflowId);
-    if (enhancedWorkflow) {
-      const status = await enhancedWorkflow.getStatus();
-      console.log(`📊 Enhanced workflow status: ${status.status}, progress: ${status.progress}%`);
-      return NextResponse.json({
-        ...status,
-        workflowType: 'enhanced-background'
-      });
-    }
-
-    // Try to load from persistent storage (Netlify Blobs + fallbacks)
+    // Use job storage to get status (handles both job_* and enhanced-workflow-* formats)
+    const { getJobStorage } = await import('@/lib/storage/job-storage');
+    const storage = getJobStorage();
+    
     try {
-      console.log(`🔍 Loading persisted status for workflow: ${workflowId}`);
-      const persistedStatus = await EnhancedContentWorkflow.loadPersistedStatus(workflowId);
-      if (persistedStatus) {
-        console.log(`📊 Loaded persisted workflow status: ${persistedStatus.status}, progress: ${persistedStatus.progress}%`);
-        
-        // If the workflow is completed and has content, also try to load the content from Netlify Blobs
-        if (persistedStatus.status === 'completed' && !persistedStatus.content) {
-          try {
-            const { NetlifyBlobsStorage } = await import('@/lib/storage/netlify-blobs-storage');
-            const storage = new NetlifyBlobsStorage();
-            const finalContent = await storage.getFinalContent(workflowId);
-            const qualityReport = await storage.getQualityReport(workflowId);
-            
-            if (finalContent) {
-              persistedStatus.content = finalContent;
-              console.log(`📄 Loaded final content from Netlify Blobs for ${workflowId}`);
-            }
-            
-            if (qualityReport) {
-              persistedStatus.qualityScores = qualityReport;
-              console.log(`📊 Loaded quality scores from Netlify Blobs for ${workflowId}`);
-            }
-          } catch (contentError) {
-            console.warn(`Failed to load content from Netlify Blobs: ${contentError}`);
-          }
-        }
-        
+      const jobData = await storage.getJobStatus(jobId);
+      
+      if (jobData) {
+        console.log(`📊 Job status found: ${jobData.status}, progress: ${jobData.progress || 0}%`);
         return NextResponse.json({
-          ...persistedStatus,
+          success: true,
+          ...jobData,
           workflowType: 'enhanced-background'
         });
       }
     } catch (error) {
-      console.error('Failed to load persisted status:', error);
+      console.error('Failed to load job status:', error);
     }
 
-    // If we can't find the workflow, it might be a completed workflow that was cleaned up
-    // Check if the workflow ID looks valid (has timestamp) and isn't too old
-    const timestampMatch = workflowId.match(/(\d+)/);
+    // If job not found, check if it's a recent job that might still be initializing
+    const timestampMatch = jobId.match(/(\d+)/);
     if (timestampMatch) {
-      const workflowTime = parseInt(timestampMatch[1]);
+      const jobTime = parseInt(timestampMatch[1]);
       const now = Date.now();
-      const ageInMinutes = (now - workflowTime) / (1000 * 60);
+      const ageInMinutes = (now - jobTime) / (1000 * 60);
       
-      // If the workflow is recent (less than 2 hours), it was likely a real failure
+      // If the job is recent (less than 2 hours), it was likely a real failure
       if (ageInMinutes < 120) {
-        console.log(`❌ Workflow ${workflowId} not found and is recent (${Math.round(ageInMinutes)} min old) - likely failed due to API issues`);
+        console.log(`❌ Job ${jobId} not found and is recent (${Math.round(ageInMinutes)} min old) - likely failed`);
         return NextResponse.json({
-          id: workflowId,
+          jobId,
           status: 'failed', 
           progress: 0,
-          error: 'Workflow failed - API integration not working. No fallback content available.',
+          error: 'Job failed - could not be found in storage',
           workflowType: 'enhanced-background-failed',
-          startTime: new Date(workflowTime),
-          endTime: new Date(),
-          estimatedTimeRemaining: 0,
-          currentAgent: null,
-          agents: [
-            { agentId: 'market-researcher', status: 'failed', progress: 0 },
-            { agentId: 'audience-analyzer', status: 'failed', progress: 0 },
-            { agentId: 'ai-seo-optimizer', status: 'failed', progress: 0 },
-            { agentId: 'content-strategist', status: 'failed', progress: 0 },
-            { agentId: 'content-writer', status: 'failed', progress: 0 },
-            { agentId: 'content-editor', status: 'failed', progress: 0 },
-            { agentId: 'social-media-specialist', status: 'failed', progress: 0 },
-            { agentId: 'landing-page-specialist', status: 'failed', progress: 0 },
-            { agentId: 'performance-analyst', status: 'failed', progress: 0 }
-          ],
-          note: 'AI content generation failed. API integration requires fixing for real content generation.'
+          createdAt: new Date(jobTime).toISOString(),
+          updatedAt: new Date().toISOString(),
+          message: 'Job processing failed'
         });
       }
-    }
-
-
-    // Fall back to legacy workflow
-    const legacyWorkflow = ContentWorkflow.getInstance(workflowId);
-    if (legacyWorkflow) {
-      const status = await legacyWorkflow.getStatus();
-      return NextResponse.json({
-        ...status,
-        workflowType: 'legacy'
-      });
-    }
-
-    // If workflow not found, return a 'running' status for recent workflows
-    // This handles the case where background processing might not have initialized yet
-    const workflowTimestamp = workflowId.match(/(\d+)/)?.[1];
-    if (workflowTimestamp) {
-      const workflowTime = parseInt(workflowTimestamp);
-      const now = Date.now();
-      const age = now - workflowTime;
       
-      // If workflow is less than 30 seconds old, assume it's still initializing
-      if (age < 30000) {
-        console.log(`⏳ Workflow ${workflowId} is initializing...`);
+      // If job is very recent (less than 30 seconds), assume it's still initializing
+      if (ageInMinutes < 0.5) {
+        console.log(`⏳ Job ${jobId} is initializing...`);
         return NextResponse.json({
-          id: workflowId,
-          status: 'running',
-          progress: 5,
+          jobId,
+          status: 'queued',
+          progress: 0,
+          message: 'Job is initializing...',
           workflowType: 'enhanced-background',
-          agents: [
-            { agentId: 'market-researcher', status: 'pending', progress: 0 },
-            { agentId: 'audience-analyzer', status: 'pending', progress: 0 },
-            { agentId: 'ai-seo-optimizer', status: 'pending', progress: 0 },
-            { agentId: 'content-strategist', status: 'pending', progress: 0 },
-            { agentId: 'content-writer', status: 'pending', progress: 0 },
-            { agentId: 'content-editor', status: 'pending', progress: 0 },
-            { agentId: 'social-media-specialist', status: 'pending', progress: 0 },
-            { agentId: 'landing-page-specialist', status: 'pending', progress: 0 },
-            { agentId: 'performance-analyst', status: 'pending', progress: 0 }
-          ],
-          startTime: new Date(workflowTime),
-          estimatedTimeRemaining: 900 // 15 minutes
+          createdAt: new Date(jobTime).toISOString(),
+          updatedAt: new Date().toISOString()
         });
       }
     }
 
-    console.log(`❌ Workflow ${workflowId} not found`);
+    console.log(`❌ Job ${jobId} not found`);
     return NextResponse.json(
-      { error: 'Workflow not found' },
+      { error: 'Job not found' },
       { status: 404 }
     );
 
   } catch (error) {
-    console.error('Workflow status error:', error);
+    console.error('Job status error:', error);
     return NextResponse.json(
-      { error: 'Failed to get workflow status' },
+      { error: 'Failed to get job status' },
       { status: 500 }
     );
   }

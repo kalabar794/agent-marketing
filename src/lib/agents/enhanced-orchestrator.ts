@@ -12,10 +12,11 @@ import { PerformanceAnalyst } from './performance-analyst';
 
 interface WorkerPool {
   id: string;
-  agent: BaseAgent;
+  agent: BaseAgent | null; // Now nullable for lazy loading
   isAvailable: boolean;
   currentTask?: string;
   lastUsed: Date;
+  factory?: () => BaseAgent; // Factory function for lazy initialization
 }
 
 interface TaskNode {
@@ -44,44 +45,65 @@ export class EnhancedOrchestrator {
   private executionHistory: ExecutionResult[];
   private activeExecutions: Map<string, Promise<ExecutionResult>>;
   private qualityThreshold: number = 0.8;
-  private maxExecutionTime: number = 180000; // 3 minutes max per agent (background functions have 15 min total)
+  private maxExecutionTime: number = 240000; // PERFORMANCE FIX: 4 minutes max per agent (was 3 min - align with base agent timeout)
   private enableFastFail: boolean = true;
+  private enabledAgents: Set<string>;
 
-  constructor() {
+  constructor(enabledAgents?: string[]) {
     this.workers = new Map();
     this.taskGraph = new Map();
     this.executionHistory = [];
     this.activeExecutions = new Map();
+    
+    // Configure which agents to use - default to core 7 agents
+    this.enabledAgents = new Set(enabledAgents || [
+      'market-researcher',
+      'audience-analyzer', 
+      'content-strategist',
+      'ai-seo-optimizer',
+      'content-writer',
+      'content-editor',
+      'social-media-specialist'
+    ]);
+    
     this.initializeWorkers();
     this.buildTaskGraph();
   }
 
   private initializeWorkers(): void {
-    const agents = [
-      ['market-researcher', new MarketResearcher()],
-      ['audience-analyzer', new AudienceAnalyzer()],
-      ['content-strategist', new ContentStrategist()],
-      ['ai-seo-optimizer', new AISEOOptimizer()],
-      ['content-writer', new ContentWriter()],
-      ['content-editor', new ContentEditor()],
-      ['social-media-specialist', new SocialMediaSpecialist()],
-      ['landing-page-specialist', new LandingPageSpecialist()],
-      ['performance-analyst', new PerformanceAnalyst()]
-    ];
+    // PERFORMANCE FIX: Use lazy initialization to prevent memory explosion
+    // Only create agent factories, not instances
+    const agentFactories = new Map([
+      ['market-researcher', () => new MarketResearcher()],
+      ['audience-analyzer', () => new AudienceAnalyzer()],
+      ['content-strategist', () => new ContentStrategist()],
+      ['ai-seo-optimizer', () => new AISEOOptimizer()],
+      ['content-writer', () => new ContentWriter()],
+      ['content-editor', () => new ContentEditor()],
+      ['social-media-specialist', () => new SocialMediaSpecialist()],
+      ['landing-page-specialist', () => new LandingPageSpecialist()],
+      ['performance-analyst', () => new PerformanceAnalyst()]
+    ]);
 
-    agents.forEach(([id, agent]) => {
-      this.workers.set(id as string, {
-        id: id as string,
-        agent: agent as BaseAgent,
-        isAvailable: true,
-        lastUsed: new Date(0)
-      });
+    // Only initialize placeholders for enabled agents
+    this.enabledAgents.forEach(id => {
+      if (agentFactories.has(id)) {
+        this.workers.set(id, {
+          id,
+          agent: null, // Will be lazily created on first use
+          isAvailable: true,
+          lastUsed: new Date(0),
+          factory: agentFactories.get(id)!
+        } as WorkerPool & { factory: () => BaseAgent });
+      }
     });
+
+    console.log(`🤖 Prepared ${this.workers.size} agent factories (memory efficient):`, Array.from(this.enabledAgents));
   }
 
   private buildTaskGraph(): void {
-    // Define task nodes with smart dependencies and parallel capabilities
-    const tasks: Omit<TaskNode, 'agent'>[] = [
+    // Define all possible task nodes with smart dependencies and parallel capabilities
+    const allTasks: Omit<TaskNode, 'agent'>[] = [
       {
         id: 'market-researcher',
         dependencies: [],
@@ -111,7 +133,7 @@ export class EnhancedOrchestrator {
       },
       {
         id: 'content-strategist',
-        dependencies: ['market-researcher', 'audience-analyzer'],
+        dependencies: ['market-researcher'], // PERFORMANCE FIX: Reduced dependencies to enable more parallelization
         priority: 9,
         estimatedDuration: 150,
         canRunInParallel: false,
@@ -120,7 +142,7 @@ export class EnhancedOrchestrator {
       },
       {
         id: 'content-writer',
-        dependencies: ['content-strategist', 'ai-seo-optimizer'],
+        dependencies: ['content-strategist'], // PERFORMANCE FIX: Removed SEO dependency - SEO can run in parallel and be integrated later
         priority: 9,
         estimatedDuration: 240,
         canRunInParallel: false,
@@ -138,7 +160,7 @@ export class EnhancedOrchestrator {
       },
       {
         id: 'social-media-specialist',
-        dependencies: ['content-strategist'],
+        dependencies: [], // PERFORMANCE FIX: Removed dependency to allow parallel execution
         priority: 6,
         estimatedDuration: 90,
         canRunInParallel: true,
@@ -147,7 +169,7 @@ export class EnhancedOrchestrator {
       },
       {
         id: 'landing-page-specialist',
-        dependencies: ['content-strategist'],
+        dependencies: [], // PERFORMANCE FIX: Removed dependency to allow parallel execution
         priority: 6,
         estimatedDuration: 120,
         canRunInParallel: true,
@@ -165,15 +187,24 @@ export class EnhancedOrchestrator {
       }
     ];
 
-    tasks.forEach(task => {
-      const worker = this.workers.get(task.id);
-      if (worker) {
-        this.taskGraph.set(task.id, {
-          ...task,
-          agent: worker.agent
-        });
+    // Only include tasks for enabled agents
+    allTasks.forEach(task => {
+      if (this.enabledAgents.has(task.id)) {
+        const worker = this.workers.get(task.id);
+        if (worker) {
+          // Filter dependencies to only include enabled agents
+          const filteredDependencies = task.dependencies.filter(dep => this.enabledAgents.has(dep));
+          
+          this.taskGraph.set(task.id, {
+            ...task,
+            dependencies: filteredDependencies,
+            agent: null as any // Will be set when agent is lazily loaded
+          });
+        }
       }
     });
+
+    console.log(`📊 Built task graph with ${this.taskGraph.size} tasks and filtered dependencies`);
   }
 
   public async executeWorkflow(
@@ -185,23 +216,46 @@ export class EnhancedOrchestrator {
     const failed = new Set<string>();
     
     console.log('🚀 Starting enhanced orchestrator workflow');
+    console.log('🚀 Orchestrator timestamp:', new Date().toISOString());
+    console.log('🚀 Request details:', { 
+      contentType: request.contentType, 
+      topic: request.topic,
+      targetAudience: request.targetAudience 
+    });
+    console.log('🚀 Task graph size:', this.taskGraph.size);
 
     // Phase 1: Execute independent tasks in parallel
+    console.log('📋 Phase 1: Getting ready tasks...');
     const phase1Tasks = this.getReadyTasks(completed);
-    console.log(`📋 Phase 1: Executing ${phase1Tasks.length} parallel tasks`);
+    console.log(`📋 Phase 1: Found ${phase1Tasks.length} parallel tasks:`, phase1Tasks.map(t => t.id));
+    console.log('📋 Phase 1: Starting executeTasksInParallel...');
     
-    const phase1Results = await this.executeTasksInParallel(
-      phase1Tasks, 
-      request, 
-      results, 
-      onProgress
-    );
+    let phase1Results;
+    try {
+      phase1Results = await this.executeTasksInParallel(
+        phase1Tasks, 
+        request, 
+        results, 
+        onProgress
+      );
+      console.log('📋 Phase 1: executeTasksInParallel completed with', phase1Results.length, 'results');
+    } catch (phase1Error) {
+      console.error('❌ Phase 1: executeTasksInParallel failed:', phase1Error);
+      throw new Error(`Phase 1 execution failed: ${phase1Error.message}`);
+    }
 
+    console.log('📋 Phase 1: Processing results...');
     this.processResults(phase1Results, completed, failed, results);
+    console.log('📋 Phase 1: Results processed. Completed:', Array.from(completed), 'Failed:', Array.from(failed));
 
     // Phase 2: Execute dependent tasks as dependencies complete
+    console.log('📋 Phase 2: Starting dependency resolution loop...');
+    let phaseCounter = 2;
     while (completed.size + failed.size < this.taskGraph.size) {
+      console.log(`📋 Phase ${phaseCounter}: Loop iteration - Completed: ${completed.size}, Failed: ${failed.size}, Total: ${this.taskGraph.size}`);
+      
       const readyTasks = this.getReadyTasks(completed);
+      console.log(`📋 Phase ${phaseCounter}: Found ${readyTasks.length} ready tasks:`, readyTasks.map(t => t.id));
       
       if (readyTasks.length === 0) {
         // Check for circular dependencies or unrecoverable failures
@@ -209,18 +263,31 @@ export class EnhancedOrchestrator {
           .filter(id => !completed.has(id) && !failed.has(id));
         
         console.warn('⚠️ No ready tasks found, remaining:', remaining);
+        console.warn('⚠️ This might indicate circular dependencies or all tasks failed');
         break;
       }
 
-      console.log(`📋 Next phase: Executing ${readyTasks.length} tasks`);
-      const phaseResults = await this.executeTasksInParallel(
-        readyTasks,
-        request,
-        results,
-        onProgress
-      );
+      console.log(`📋 Phase ${phaseCounter}: Starting executeTasksInParallel for ${readyTasks.length} tasks...`);
+      
+      let phaseResults;
+      try {
+        phaseResults = await this.executeTasksInParallel(
+          readyTasks,
+          request,
+          results,
+          onProgress
+        );
+        console.log(`📋 Phase ${phaseCounter}: executeTasksInParallel completed with ${phaseResults.length} results`);
+      } catch (phaseError) {
+        console.error(`❌ Phase ${phaseCounter}: executeTasksInParallel failed:`, phaseError);
+        throw new Error(`Phase ${phaseCounter} execution failed: ${phaseError.message}`);
+      }
 
+      console.log(`📋 Phase ${phaseCounter}: Processing results...`);
       this.processResults(phaseResults, completed, failed, results);
+      console.log(`📋 Phase ${phaseCounter}: Results processed. New totals - Completed: ${completed.size}, Failed: ${failed.size}`);
+      
+      phaseCounter++;
     }
 
     console.log(`✅ Workflow completed: ${completed.size} successful, ${failed.size} failed`);
@@ -246,24 +313,37 @@ export class EnhancedOrchestrator {
     existingResults: Map<string, any>,
     onProgress?: (agentId: string, progress: number) => void
   ): Promise<ExecutionResult[]> {
+    console.log('🔧 executeTasksInParallel: Starting with', tasks.length, 'tasks:', tasks.map(t => t.id));
+    
     // Group tasks by parallel execution capability
     const parallelTasks = tasks.filter(task => task.canRunInParallel);
     const sequentialTasks = tasks.filter(task => !task.canRunInParallel);
+
+    console.log('🔧 executeTasksInParallel: Parallel tasks:', parallelTasks.map(t => t.id));
+    console.log('🔧 executeTasksInParallel: Sequential tasks:', sequentialTasks.map(t => t.id));
 
     const results: ExecutionResult[] = [];
 
     // Execute parallel tasks simultaneously
     if (parallelTasks.length > 0) {
-      const parallelPromises = parallelTasks.map(task => 
-        this.executeTask(task, request, existingResults, onProgress)
-      );
+      console.log('🔧 executeTasksInParallel: Starting', parallelTasks.length, 'parallel tasks...');
       
+      const parallelPromises = parallelTasks.map(task => {
+        console.log('🔧 executeTasksInParallel: Creating promise for task:', task.id);
+        return this.executeTask(task, request, existingResults, onProgress);
+      });
+      
+      console.log('🔧 executeTasksInParallel: Waiting for parallel promises to settle...');
       const parallelResults = await Promise.allSettled(parallelPromises);
+      console.log('🔧 executeTasksInParallel: Parallel promises settled, processing results...');
       
       parallelResults.forEach((result, index) => {
+        const taskId = parallelTasks[index].id;
         if (result.status === 'fulfilled') {
+          console.log('🔧 executeTasksInParallel: Task', taskId, 'fulfilled successfully');
           results.push(result.value);
         } else {
+          console.error('🔧 executeTasksInParallel: Task', taskId, 'rejected:', result.reason);
           results.push({
             agentId: parallelTasks[index].id,
             success: false,
@@ -310,6 +390,17 @@ export class EnhancedOrchestrator {
       throw new Error(`Worker ${task.id} not available`);
     }
 
+    // PERFORMANCE FIX: Lazy initialize agent only when needed
+    if (!worker.agent && worker.factory) {
+      console.log(`🏗️ Lazy initializing agent: ${task.id}`);
+      worker.agent = worker.factory();
+      console.log(`✅ Agent ${task.id} initialized successfully`);
+    }
+
+    if (!worker.agent) {
+      throw new Error(`Worker ${task.id} has no agent and no factory`);
+    }
+
     // Mark worker as busy
     worker.isAvailable = false;
     worker.currentTask = task.id;
@@ -339,7 +430,7 @@ export class EnhancedOrchestrator {
       }, 2000);
 
       // Wrap execution with timeout promise
-      const executionPromise = task.agent.execute(request, context);
+      const executionPromise = worker.agent.execute(request, context);
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => {
           reject(new Error(`${task.id} execution timeout after ${this.maxExecutionTime}ms`));

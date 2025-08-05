@@ -26,7 +26,7 @@ const contentTypes = [
     description: 'Long-form content for thought leadership and SEO',
     icon: FileText,
     estimatedTime: '15-20 minutes',
-    agents: ['Content Strategist', 'SEO Optimizer', 'Content Writer', 'Brand Guardian', 'Quality Controller'],
+    agents: ['Market Researcher', 'Audience Analyzer', 'Content Strategist', 'Content Writer', 'SEO Optimizer', 'Social Media Specialist', 'Content Editor'],
     features: ['SEO Optimized', '2000+ words', 'Research backed', 'Brand aligned']
   },
   {
@@ -35,7 +35,7 @@ const contentTypes = [
     description: 'Multi-platform social content with engagement focus',
     icon: Share2,
     estimatedTime: '8-12 minutes',
-    agents: ['Content Strategist', 'Content Writer', 'Visual Designer', 'Brand Guardian'],
+    agents: ['Market Researcher', 'Audience Analyzer', 'Content Strategist', 'Content Writer', 'SEO Optimizer', 'Social Media Specialist', 'Content Editor'],
     features: ['Multi-platform', 'Visual content', 'Hashtag research', 'Engagement optimized']
   },
   {
@@ -44,7 +44,7 @@ const contentTypes = [
     description: 'Conversion-focused email sequences and newsletters',
     icon: Mail,
     estimatedTime: '10-15 minutes',
-    agents: ['Content Strategist', 'Content Writer', 'Brand Guardian', 'Quality Controller'],
+    agents: ['Market Researcher', 'Audience Analyzer', 'Content Strategist', 'Content Writer', 'SEO Optimizer', 'Social Media Specialist', 'Content Editor'],
     features: ['A/B test ready', 'Personalized', 'CTA optimized', 'Mobile responsive']
   },
   {
@@ -53,7 +53,7 @@ const contentTypes = [
     description: 'High-converting pages for campaigns and products',
     icon: Globe,
     estimatedTime: '20-25 minutes',
-    agents: ['Content Strategist', 'SEO Optimizer', 'Content Writer', 'Visual Designer', 'Brand Guardian', 'Quality Controller'],
+    agents: ['Market Researcher', 'Audience Analyzer', 'Content Strategist', 'Content Writer', 'SEO Optimizer', 'Social Media Specialist', 'Content Editor'],
     features: ['Conversion optimized', 'SEO ready', 'Mobile responsive', 'A/B test variants']
   }
 ];
@@ -132,7 +132,7 @@ export default function CreateContent() {
         brandGuidelines: formData.brandGuidelines?.trim()
       };
 
-      const response = await fetch('/api/content/generate', {
+      const response = await fetch('/api/content/generate-background', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,10 +145,10 @@ export default function CreateContent() {
         throw new Error(errorData.error || 'Failed to start content generation');
       }
 
-      const { workflowId } = await response.json();
+      const { jobId } = await response.json();
       
-      // Redirect to workflow page with the workflow ID
-      window.location.href = `/workflow?id=${workflowId}`;
+      // Redirect to background workflow page with the job ID  
+      window.location.href = `/workflow-bg?jobId=${jobId}`;
       
     } catch (error) {
       console.error('Error starting content generation:', error);

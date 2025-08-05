@@ -97,7 +97,7 @@ export class ContentWriter extends BaseAgent {
       });
       
       const response = await this.callLLM(prompt, {
-        maxTokens: 16384, // Increased for comprehensive 1500-2500 word content generation
+        maxTokens: this.maxOutputTokens, // PERFORMANCE FIX: Use base class limit to prevent conflicts
         temperature: 0.3, // Optimized for consistent, high-quality marketing copy
         systemPrompt: `You are a professional marketing content writer specializing in comprehensive, long-form content.
         

@@ -13,12 +13,44 @@ export interface MarketResearchOutput {
 
 export class MarketResearcher extends BaseAgent {
   public async execute(request: ContentGenerationRequest, context: any): Promise<MarketResearchOutput> {
+    console.log(`🔍 [MarketResearcher] Starting execute() - timestamp: ${new Date().toISOString()}`);
+    console.log(`🔍 [MarketResearcher] Request details:`, {
+      topic: request.topic,
+      audience: request.targetAudience,
+      contentType: request.contentType
+    });
+    
+    console.log(`🔍 [MarketResearcher] Step 1: Building prompt...`);
     const prompt = this.buildPrompt(request);
+    console.log(`🔍 [MarketResearcher] Step 1 completed: Prompt built (${prompt.length} chars)`);
     
     try {
+      console.log(`🔍 [MarketResearcher] Step 2: Calling LLM...`);
+      console.log(`🔍 [MarketResearcher] Step 2a: Pre-callLLM timestamp: ${new Date().toISOString()}`);
+      
       const response = await this.callLLM(prompt);
-      return this.parseResponse(response);
+      
+      console.log(`🔍 [MarketResearcher] Step 2b: Post-callLLM timestamp: ${new Date().toISOString()}`);
+      console.log(`🔍 [MarketResearcher] Step 2 completed: LLM response received (${response.length} chars)`);
+      
+      console.log(`🔍 [MarketResearcher] Step 3: Parsing response...`);
+      const result = this.parseResponse(response);
+      console.log(`🔍 [MarketResearcher] Step 3 completed: Response parsed successfully`);
+      console.log(`🔍 [MarketResearcher] Final result summary:`, {
+        industry: result.industry,
+        trendsCount: result.trends?.length || 0,
+        competitorsCount: result.competitors?.length || 0,
+        opportunitiesCount: result.opportunities?.length || 0
+      });
+      
+      console.log(`🔍 [MarketResearcher] Execute completed successfully - timestamp: ${new Date().toISOString()}`);
+      return result;
     } catch (error) {
+      console.error(`❌ [MarketResearcher] Execute failed - timestamp: ${new Date().toISOString()}`, error);
+      console.error(`❌ [MarketResearcher] Error details:`, {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       throw new Error(`Market research failed: ${error}`);
     }
   }

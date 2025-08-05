@@ -5,9 +5,9 @@ import Anthropic from '@anthropic-ai/sdk';
 export abstract class BaseAgent {
   protected agentName: string;
   protected maxRetries: number = 3;
-  protected timeout: number = 8000; // 8 seconds to fit within Netlify 10-second limit
+  protected timeout: number = 120000; // PERFORMANCE FIX: 2 minutes per agent (was 8 seconds - too short!)
   protected usePromptCaching: boolean = false; // Disable caching for faster responses
-  protected maxOutputTokens: number = 1000; // Reduced for speed - still allows ~750 words
+  protected maxOutputTokens: number = 4000; // PERFORMANCE FIX: Adjusted for Claude Haiku limit (4096 max)
 
   constructor(agentName: string) {
     this.agentName = agentName;
@@ -23,9 +23,14 @@ export abstract class BaseAgent {
     systemPrompt?: string;
   }): Promise<string> {
     
-    // Validate config at runtime to ensure API key is available
-    validateConfigAtRuntime();
-    console.log(`[${this.agentName}] Starting LLM call with validated API key`);
+    try {
+      // Validate config at runtime to ensure API key is available
+      validateConfigAtRuntime();
+      console.log(`[${this.agentName}] Starting LLM call with validated API key`);
+    } catch (error) {
+      console.error(`[${this.agentName}] Config validation failed:`, error);
+      throw new Error(`${this.agentName} configuration error: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
     const {
       model = 'claude-3-haiku-20240307', // Use Claude Haiku for speed
@@ -36,8 +41,14 @@ export abstract class BaseAgent {
     } = options || {};
 
     // Initialize Anthropic client with proper error handling
+    // Get API key directly from environment in serverless context
+    const apiKey = config.anthropicApiKey || process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new Error(`${this.agentName}: ANTHROPIC_API_KEY not found in config or environment`);
+    }
+    
     const anthropic = new Anthropic({
-      apiKey: config.anthropicApiKey,
+      apiKey: apiKey,
     });
 
     // Build messages array
@@ -53,6 +64,7 @@ export abstract class BaseAgent {
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         console.log(`[${this.agentName}] Calling Claude API (attempt ${attempt}/${this.maxRetries})`);
+        console.log(`[${this.agentName}] Pre-API call timestamp: ${new Date().toISOString()}`);
         
         const requestOptions: Anthropic.MessageCreateParams = {
           model,
@@ -72,7 +84,19 @@ export abstract class BaseAgent {
           requestOptions.tools = this.getAvailableTools();
         }
 
+        console.log(`[${this.agentName}] API request options:`, {
+          model: requestOptions.model,
+          max_tokens: requestOptions.max_tokens,
+          temperature: requestOptions.temperature,
+          hasSystemPrompt: !!requestOptions.system,
+          hasTools: !!requestOptions.tools,
+          messageCount: requestOptions.messages.length
+        });
+        
+        console.log(`[${this.agentName}] About to call anthropic.messages.create()...`);
         const response = await anthropic.messages.create(requestOptions);
+        console.log(`[${this.agentName}] Post-API call timestamp: ${new Date().toISOString()}`);
+        console.log(`[${this.agentName}] API call completed successfully`);
         
         // Log token usage for cost monitoring (API best practice)
         if (response.usage) {
@@ -98,12 +122,16 @@ export abstract class BaseAgent {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         
-        console.error(`[${this.agentName}] LLM call attempt ${attempt} failed:`, {
+        // PERFORMANCE FIX: Enhanced error logging for debugging silent failures
+        console.error(`[${this.agentName}] ❌ CRITICAL: LLM call attempt ${attempt} failed:`, {
           model,
           maxTokens,
           temperature,
           agentName: this.agentName,
-          error: lastError.message
+          error: lastError.message,
+          errorStack: lastError.stack,
+          timestamp: new Date().toISOString(),
+          promptLength: prompt.length
         });
         
         if (attempt < this.maxRetries) {
