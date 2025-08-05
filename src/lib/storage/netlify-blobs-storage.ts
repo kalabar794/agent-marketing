@@ -5,11 +5,36 @@ export class NetlifyBlobsStorage {
   private store: any;
   
   constructor() {
-    // Initialize Netlify Blobs store
-    this.store = getStore('marketing-agent-storage');
+    // Initialize Netlify Blobs store with proper configuration
+    try {
+      // Try to get from environment first (works on Netlify production)
+      this.store = getStore('marketing-agent-storage');
+    } catch (error) {
+      console.warn('Failed to initialize Netlify Blobs with automatic config, trying manual config:', error.message);
+      
+      // Manual configuration for development or when environment is not fully configured
+      const siteId = process.env.NETLIFY_SITE_ID || '6b8802ee-ebc3-4d40-b769-2c0d7ba9425a';
+      const token = process.env.NETLIFY_API_TOKEN || process.env.NETLIFY_AUTH_TOKEN;
+      
+      if (siteId && token) {
+        console.log('Using manual Netlify Blobs configuration');
+        this.store = getStore('marketing-agent-storage', {
+          siteID: siteId,
+          token: token
+        });
+      } else {
+        console.warn('Netlify Blobs not available - missing siteID or token. Storage operations will be disabled.');
+        this.store = null;
+      }
+    }
   }
 
   public async saveAgentOutput(workflowId: string, agentId: string, result: any): Promise<void> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, skipping saveAgentOutput');
+      return;
+    }
+    
     const key = `${workflowId}_agent_${agentId}`;
     const data = {
       workflowId,
@@ -23,6 +48,11 @@ export class NetlifyBlobsStorage {
   }
 
   public async getAgentOutput(workflowId: string, agentId: string): Promise<any> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, returning null for getAgentOutput');
+      return null;
+    }
+    
     const key = `${workflowId}_agent_${agentId}`;
     try {
       const data = await this.store.get(key);
@@ -36,6 +66,11 @@ export class NetlifyBlobsStorage {
   }
 
   public async saveFinalContent(workflowId: string, content: GeneratedContent): Promise<void> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, skipping saveFinalContent');
+      return;
+    }
+    
     const key = `${workflowId}_final_content`;
     const data = {
       workflowId,
@@ -48,6 +83,11 @@ export class NetlifyBlobsStorage {
   }
 
   public async getFinalContent(workflowId: string): Promise<GeneratedContent | null> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, returning null for getFinalContent');
+      return null;
+    }
+    
     const key = `${workflowId}_final_content`;
     try {
       const data = await this.store.get(key);
@@ -61,6 +101,11 @@ export class NetlifyBlobsStorage {
   }
 
   public async saveQualityReport(workflowId: string, scores: QualityScores): Promise<void> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, skipping saveQualityReport');
+      return;
+    }
+    
     const key = `${workflowId}_quality_report`;
     const data = {
       workflowId,
@@ -73,6 +118,11 @@ export class NetlifyBlobsStorage {
   }
 
   public async getQualityReport(workflowId: string): Promise<QualityScores | null> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, returning null for getQualityReport');
+      return null;
+    }
+    
     const key = `${workflowId}_quality_report`;
     try {
       const data = await this.store.get(key);
@@ -136,6 +186,11 @@ export class NetlifyBlobsStorage {
   }
 
   public async saveWorkflowStatus(workflowId: string, status: any): Promise<void> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, skipping saveWorkflowStatus');
+      return;
+    }
+    
     const key = `${workflowId}_status`;
     const data = {
       workflowId,
@@ -148,6 +203,11 @@ export class NetlifyBlobsStorage {
   }
 
   public async getWorkflowStatus(workflowId: string): Promise<any> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, returning null for getWorkflowStatus');
+      return null;
+    }
+    
     const key = `${workflowId}_status`;
     try {
       const data = await this.store.get(key);
@@ -178,6 +238,11 @@ export class NetlifyBlobsStorage {
       revisionRequest: null,
       status: null
     };
+
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, returning empty workflow data');
+      return workflowData;
+    }
 
     try {
       // Get all keys with the workflow prefix
@@ -263,6 +328,63 @@ export class NetlifyBlobsStorage {
       } catch (error) {
         console.warn(`Failed to delete key ${key}:`, error);
       }
+    }
+  }
+
+  // Job status methods for background processing
+  public async saveJobStatus(jobId: string, status: any): Promise<void> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, skipping saveJobStatus');
+      return;
+    }
+    
+    const key = `job_${jobId}_status`;
+    const data = {
+      jobId,
+      ...status,
+      updatedAt: new Date().toISOString(),
+      type: 'job_status'
+    };
+    
+    await this.store.set(key, JSON.stringify(data));
+    console.log(`[Netlify Blobs] Saved job status for ${jobId}:`, status.status);
+  }
+
+  public async getJobStatus(jobId: string): Promise<any> {
+    if (!this.store) {
+      console.warn('Netlify Blobs not available, returning null for getJobStatus');
+      return null;
+    }
+    
+    const key = `job_${jobId}_status`;
+    try {
+      const data = await this.store.get(key);
+      if (!data) return null;
+      const parsed = JSON.parse(data);
+      return parsed;
+    } catch (error) {
+      console.error(`Failed to get job status for ${jobId}:`, error);
+      return null;
+    }
+  }
+
+  public async updateJobStatus(jobId: string, updates: any): Promise<void> {
+    const existing = await this.getJobStatus(jobId) || { jobId };
+    const updated = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    await this.saveJobStatus(jobId, updated);
+  }
+
+  public async deleteJobStatus(jobId: string): Promise<void> {
+    const key = `job_${jobId}_status`;
+    try {
+      await this.store.delete(key);
+      console.log(`[Netlify Blobs] Deleted job status for ${jobId}`);
+    } catch (error) {
+      console.warn(`Failed to delete job status for ${jobId}:`, error);
     }
   }
 
