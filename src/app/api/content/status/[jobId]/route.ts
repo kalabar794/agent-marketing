@@ -34,8 +34,14 @@ export async function GET(
         // Send initial status
         const initializeStatus = async () => {
           try {
-            const jobData = await storage.getJobStatus(jobId);
-            if (jobData) {
+            // Use new Netlify Function for status
+            const statusUrl = process.env.NODE_ENV === 'production' 
+              ? `${request.nextUrl.origin}/.netlify/functions/job-status?jobId=${jobId}`
+              : `http://localhost:8888/.netlify/functions/job-status?jobId=${jobId}`;
+              
+            const response = await fetch(statusUrl);
+            if (response.ok) {
+              const jobData = await response.json();
               sendEvent(jobData);
             } else {
               sendEvent({
@@ -66,8 +72,14 @@ export async function GET(
           }
 
           try {
-            const currentJobData = await storage.getJobStatus(jobId);
-            if (currentJobData) {
+            // Use new Netlify Function for status polling
+            const statusUrl = process.env.NODE_ENV === 'production' 
+              ? `${request.nextUrl.origin}/.netlify/functions/job-status?jobId=${jobId}`
+              : `http://localhost:8888/.netlify/functions/job-status?jobId=${jobId}`;
+              
+            const response = await fetch(statusUrl);
+            if (response.ok) {
+              const currentJobData = await response.json();
               sendEvent(currentJobData);
               
               // Close stream if job is completed or failed
@@ -103,22 +115,29 @@ export async function GET(
       },
     });
   } else {
-    // Regular status check
+    // Regular status check using new Netlify Function
     try {
-      const jobData = await storage.getJobStatus(jobId);
+      const statusUrl = process.env.NODE_ENV === 'production' 
+        ? `${request.nextUrl.origin}/.netlify/functions/job-status?jobId=${jobId}`
+        : `http://localhost:8888/.netlify/functions/job-status?jobId=${jobId}`;
+        
+      const response = await fetch(statusUrl);
       
-      if (!jobData) {
+      if (response.status === 404) {
         return NextResponse.json({
           success: false,
           error: 'Job not found',
           jobId
         }, { status: 404 });
       }
-
-      return NextResponse.json({
-        success: true,
-        ...jobData
-      });
+      
+      if (!response.ok) {
+        throw new Error(`Status function returned ${response.status}`);
+      }
+      
+      const jobData = await response.json();
+      return NextResponse.json(jobData);
+      
     } catch (error) {
       console.error(`Error getting job status for ${jobId}:`, error);
       return NextResponse.json({

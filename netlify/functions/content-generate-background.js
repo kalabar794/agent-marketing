@@ -1,4 +1,8 @@
 // Background function for multi-agent content generation
+// Configure as Netlify Background Function
+exports.config = {
+  type: 'background'
+};
 
 exports.handler = async (event, context) => {
   console.log('🚀 Background Function Started:', {
@@ -12,26 +16,40 @@ exports.handler = async (event, context) => {
     }
   });
 
-  // Set up global timeout wrapper - CRITICAL for preventing hanging
-  const globalTimeout = new Promise((_, reject) => {
-    setTimeout(() => {
-      console.error('❌ GLOBAL TIMEOUT: Background function exceeded 12 minutes');
-      reject(new Error('Background function exceeded maximum execution time (12 minutes)'));
-    }, 12 * 60 * 1000); // 12 minutes for better reliability
-  });
-
-  // Wrap the entire execution in a race with the global timeout
+  // Background functions in Netlify can run up to 15 minutes
+  // They continue running even after returning a response
   try {
-    const result = await Promise.race([
-      executeBackgroundFunction(event, context),
-      globalTimeout
-    ]);
+    // Return immediately to acknowledge receipt
+    const body = event.body ? JSON.parse(event.body) : {};
+    const jobId = body.jobId || 'unknown';
     
-    console.log('✅ Background function completed successfully within time limit');
-    return result;
-
+    console.log(`🚀 Background Function ${jobId} acknowledged, starting processing...`);
+    
+    // Execute the actual work
+    executeBackgroundFunction(event, context)
+      .then(() => {
+        console.log(`✅ Background function ${jobId} completed successfully`);
+      })
+      .catch((error) => {
+        console.error(`❌ Background function ${jobId} failed:`, error);
+        updateJobStatus(jobId, 'failed', `Background processing error: ${error.message}`, 0, null, error.message);
+      });
+    
+    // Return immediately with 202 Accepted
+    return {
+      statusCode: 202,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        success: true,
+        jobId,
+        message: 'Background processing started'
+      })
+    };
   } catch (error) {
-    console.error('❌ Background function failed or timed out:', error);
+    console.error('❌ Background function failed:', error);
     
     // Try to update job status if we have jobId
     const jobId = event.body ? JSON.parse(event.body).jobId : 'unknown';
@@ -74,10 +92,9 @@ async function executeBackgroundFunction(event, context) {
   try {
     logMemoryUsage('START');
     
-    console.log('📦 Step 1: Attempting to import EnhancedWorkflow...');
-    // Dynamic import of the enhanced workflow (handles TypeScript)
-    const { EnhancedWorkflow } = await import('../../src/lib/enhanced-workflow-background.ts');
-    console.log('✅ Step 1: EnhancedWorkflow imported successfully');
+    console.log('📦 Step 1: Importing Anthropic SDK directly...');
+    const Anthropic = require('@anthropic-ai/sdk');
+    console.log('✅ Step 1: Anthropic SDK imported successfully');
     
     logMemoryUsage('AFTER_IMPORT');
     
@@ -112,10 +129,11 @@ async function executeBackgroundFunction(event, context) {
       goals: request.goals?.length || 0
     });
 
-    console.log('📦 Step 4: Attempting to create EnhancedWorkflow instance...');
-    // Initialize the enhanced workflow with all 7 agents enabled
-    const workflow = new EnhancedWorkflow();
-    console.log('✅ Step 4: EnhancedWorkflow instance created successfully');
+    console.log('📦 Step 4: Creating Anthropic client...');
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+    console.log('✅ Step 4: Anthropic client created successfully');
     
     logMemoryUsage('AFTER_WORKFLOW_INIT');
     
@@ -132,34 +150,93 @@ async function executeBackgroundFunction(event, context) {
     };
     console.log('✅ Step 6: Progress callback configured');
 
-    console.log('📦 Step 7: Starting workflow execution...');
+    console.log('📦 Step 7: Starting direct content generation...');
     console.log('📦 Step 7a: Pre-execution timestamp:', new Date().toISOString());
-    console.log('📦 Step 7b: Request details:', JSON.stringify(request, null, 2));
-    
-    // PERFORMANCE FIX: Add timeout wrapper around workflow execution - reduced to 10 minutes for better reliability
-    const workflowPromise = workflow.generateContent(request, progressCallback);
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Workflow execution timed out after 10 minutes')), 10 * 60 * 1000);
+    console.log('📦 Step 7b: Request details:', {
+      hasProductType: !!request.productType,
+      hasTargetAudience: !!request.targetAudience,
+      hasContentGoals: !!request.contentGoals,
+      hasTopic: !!request.topic,
+      hasTone: !!request.tone
     });
     
-    console.log('📦 Step 7c: Starting race between workflow and timeout...');
+    // Simple direct approach - just generate content with Claude
+    await progressCallback('content-writer', 25, 'Generating marketing content...');
+    
+    const prompt = `You are a professional marketing content writer. Create compelling marketing content based on these requirements:
+
+Product Type: ${request.productType || 'Software'}
+Target Audience: ${request.targetAudience || 'General audience'}  
+Content Goals: ${request.contentGoals?.join(', ') || 'Brand awareness'}
+Topic: ${request.topic || 'Product benefits'}
+Tone: ${request.tone || 'Professional'}
+
+Please create a comprehensive blog post that:
+1. Has an engaging title
+2. Addresses the target audience effectively
+3. Achieves the specified content goals
+4. Uses the appropriate tone
+5. Is well-structured with clear sections
+6. Includes actionable insights
+
+Format the response as a complete blog post with title and content.`;
+
+    await progressCallback('content-writer', 50, 'Calling Claude API...');
+    console.log('🔔 Making Claude API call at:', new Date().toISOString());
     
     let result;
     try {
-      result = await Promise.race([workflowPromise, timeoutPromise]);
-      console.log('✅ Step 7d: Workflow execution completed successfully at:', new Date().toISOString());
-      console.log('✅ Step 7e: Result summary:', {
+      const message = await anthropic.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 4000,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      console.log('✅ Claude API responded at:', new Date().toISOString());
+      await progressCallback('content-writer', 75, 'Processing response...');
+      
+      const content = message.content[0].text;
+      
+      // Extract title from content
+      const lines = content.split('\n');
+      let title = 'Generated Marketing Content';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#')) {
+          title = trimmed.replace(/^[#\s]*/, '').substring(0, 100);
+          break;
+        }
+      }
+      
+      result = {
+        title: title,
+        content: content,
+        metadata: {
+          productType: request.productType,
+          targetAudience: request.targetAudience,
+          contentGoals: request.contentGoals,
+          generatedAt: new Date().toISOString(),
+          workflow: 'direct-claude-api'
+        }
+      };
+
+      await progressCallback('workflow', 90, 'Content generation completed');
+      console.log('🎯 Workflow completed at:', new Date().toISOString());
+      
+      console.log('✅ Step 7: Direct content generation completed successfully at:', new Date().toISOString());
+      console.log('✅ Step 7 Result summary:', {
         hasTitle: !!result?.title,
         hasContent: !!result?.content,
         contentLength: result?.content?.length || 0,
         hasMetadata: !!result?.metadata
       });
       
-      logMemoryUsage('AFTER_WORKFLOW_COMPLETION');
-    } catch (workflowError) {
-      console.error('❌ Step 7f: Workflow execution failed:', workflowError);
-      console.error('❌ Step 7g: Workflow error stack:', workflowError.stack);
-      throw new Error(`Workflow execution failed: ${workflowError.message}`);
+    } catch (apiError) {
+      console.error('❌ Step 7: Claude API call failed:', apiError);
+      throw new Error(`Claude API call failed: ${apiError.message}`);
     }
     
     console.log(`[Background] Job ${jobId} completed successfully`);
@@ -203,7 +280,7 @@ async function executeBackgroundFunction(event, context) {
   }
 }
 
-// Helper function to update job status using job storage
+// Helper function to update job status using job storage with timeout
 async function updateJobStatus(jobId, status, message, progress = 0, result = null, error = null) {
   const statusData = {
     jobId,
@@ -215,14 +292,26 @@ async function updateJobStatus(jobId, status, message, progress = 0, result = nu
     updatedAt: new Date().toISOString()
   };
 
-  console.log(`[Status Update] Job ${jobId}:`, statusData);
+  console.log(`[Status Update] Job ${jobId}:`, {
+    status,
+    progress,
+    message: message.substring(0, 100) // Log truncated message
+  });
   
   try {
-    // Dynamic import of the job storage (handles both Netlify Blobs and fallback)
-    const { getJobStorage } = await import('../../src/lib/storage/job-storage.ts');
+    // Use the simple JavaScript wrapper to avoid TypeScript import issues
+    const { getJobStorage } = require('./job-storage-wrapper.js');
     const storage = getJobStorage();
-    await storage.saveJobStatus(jobId, statusData);
+    
+    // Add timeout to storage operations to prevent I/O blocking
+    const savePromise = storage.saveJobStatus(jobId, statusData);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Storage timeout after 5 seconds')), 5000)
+    );
+    
+    await Promise.race([savePromise, timeoutPromise]);
   } catch (error) {
     console.error(`Failed to save job status for ${jobId}:`, error);
+    // Don't throw - storage failures shouldn't stop the workflow
   }
 }
