@@ -43,3 +43,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# testing and debugging artifacts
+test-results/
+playwright-report/
+*.png
+*-debug.png
+*-test.png
+*-progress-*.png
+workflow-*.png
+
+# debug and test files
+*-debug*.js
+*-test*.js
+debug-*.js
+test-*.js
