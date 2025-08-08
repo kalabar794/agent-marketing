@@ -53,8 +53,23 @@ playwright-report/
 *-progress-*.png
 workflow-*.png
 
-# debug and test files
+# debug and test files  
 *-debug*.js
 *-test*.js
 debug-*.js
 test-*.js
+*-test*.ts
+run-*.js
+check-*.js
+api-verification.js
+simple-test.js
+quick-test.js
+view-content.js
+
+# temporary files and documentation
+*.tsbuildinfo
+*-demo*.html
+*-demo*.md
+ENHANCED_*.md
+REAL_*.md
+DEVELOPMENT.md
