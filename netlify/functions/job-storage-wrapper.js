@@ -1,8 +1,6 @@
 // Simple JavaScript wrapper for job storage
 // This avoids TypeScript import issues in Netlify Functions
 
-const { getStore } = require('@netlify/blobs'); // Using getStore correctly
-
 class SimpleJobStorage {
   constructor() {
     this.useBlobs = false;
@@ -10,6 +8,7 @@ class SimpleJobStorage {
     
     try {
       // Try to initialize Netlify Blobs
+      const { getStore } = require('@netlify/blobs');
       this.store = getStore('marketing-agent-storage');
       this.useBlobs = true;
       console.log('📦 Using Netlify Blobs for job storage');
@@ -17,6 +16,13 @@ class SimpleJobStorage {
       console.warn('⚠️ Failed to initialize Netlify Blobs, using memory storage:', error.message);
       this.useBlobs = false;
     }
+
+    // Global shared storage for cross-function persistence
+    // This is a hack but works for the current setup
+    if (!global.jobStorageCache) {
+      global.jobStorageCache = new Map();
+    }
+    this.globalStorage = global.jobStorageCache;
   }
 
   async saveJobStatus(jobId, statusData) {
@@ -41,9 +47,9 @@ class SimpleJobStorage {
       }
     }
 
-    // Fallback to memory storage
-    this.memoryStorage.set(jobId, data);
-    console.log(`⚠️ [Memory Storage] Saved job ${jobId}:`, statusData.status, 'NOTE: Memory storage not persistent!');
+    // Fallback to global shared storage (more persistent than instance memory)
+    this.globalStorage.set(jobId, data);
+    console.log(`💾 [Global Storage] Saved job ${jobId}:`, statusData.status);
   }
 
   async getJobStatus(jobId) {
@@ -65,10 +71,10 @@ class SimpleJobStorage {
       }
     }
 
-    // Fallback to memory storage
-    const memoryResult = this.memoryStorage.get(jobId) || null;
-    console.log(`🔍 [Memory Storage] Job ${jobId}:`, memoryResult ? 'FOUND' : 'NOT FOUND');
-    return memoryResult;
+    // Fallback to global shared storage
+    const globalResult = this.globalStorage.get(jobId) || null;
+    console.log(`🔍 [Global Storage] Job ${jobId}:`, globalResult ? 'FOUND' : 'NOT FOUND');
+    return globalResult;
   }
 
   async updateJobStatus(jobId, statusUpdate) {
