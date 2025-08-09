@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
@@ -111,7 +111,7 @@ function calculateProgress(job: JobData): number {
   return Math.round((completed / job.agents.length) * 100);
 }
 
-export default function MultiAgentWorkflowPage() {
+function MultiAgentWorkflowContent() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId');
   const [job, setJob] = useState<JobData | null>(null);
@@ -244,5 +244,20 @@ export default function MultiAgentWorkflowPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MultiAgentWorkflowPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">Loading…</h2>
+        </div>
+      </div>
+    }>
+      <MultiAgentWorkflowContent />
+    </Suspense>
   );
 }
