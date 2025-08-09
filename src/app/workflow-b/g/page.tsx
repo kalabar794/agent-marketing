@@ -8,8 +8,9 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { AlertCircle, RefreshCw, FileText, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Human‑friendly names and colours for known agents.
 const agentMapping: Record<string, { name: string; description: string; color: { primary: string; secondary: string; bg: string; border: string; text: string; }; }> = {
@@ -113,10 +114,12 @@ function calculateProgress(job: JobData): number {
 
 function MultiAgentWorkflowContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const jobId = searchParams.get('jobId');
   const [job, setJob] = useState<JobData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [hasContent, setHasContent] = useState<boolean>(false);
 
   useEffect(() => {
     if (!jobId) {
@@ -127,23 +130,31 @@ function MultiAgentWorkflowContent() {
     let cancelled = false;
     const fetchJob = async () => {
       try {
-        const res = await fetch(`/api/multi-agent/job/?jobId=${jobId}`);
+        // Try the new API first
+        const res = await fetch(`/api/job?jobId=${jobId}`);
         if (!res.ok) {
-          if (res.status === 404) {
-            const data = await res.json().catch(() => null);
-            setError(data?.message || 'Job not found');
-          } else {
-            const text = await res.text();
-            setError(`Unexpected error: ${text}`);
+          // Fall back to old API
+          const oldRes = await fetch(`/api/multi-agent/job/?jobId=${jobId}`);
+          if (!oldRes.ok) {
+            setError('Job not found');
+            setLoading(false);
+            return;
           }
-          setLoading(false);
-          return;
-        }
-        const data: JobData = await res.json();
-        if (!cancelled) {
-          setJob(data);
-          setError(null);
-          setLoading(false);
+          const data: JobData = await oldRes.json();
+          if (!cancelled) {
+            setJob(data);
+            setHasContent(false);
+            setError(null);
+            setLoading(false);
+          }
+        } else {
+          const data = await res.json();
+          if (!cancelled) {
+            setJob(data);
+            setHasContent(!!data.result);
+            setError(null);
+            setLoading(false);
+          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -242,6 +253,23 @@ function MultiAgentWorkflowContent() {
             })}
           </div>
         </div>
+        
+        {/* View Content Button */}
+        {progress === 100 && hasContent && (
+          <div className="mt-8 text-center">
+            <Button
+              onClick={() => router.push(`/content/${job.id}`)}
+              className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold text-lg px-8 py-4 h-auto rounded-xl shadow-2xl transform hover:scale-105 transition-all duration-200"
+            >
+              <FileText className="w-5 h-5 mr-2" />
+              View Generated Blog Content
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <p className="text-sm text-gray-400 mt-4">
+              Your blog post is ready! Click to read the full content.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
