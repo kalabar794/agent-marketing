@@ -27,6 +27,8 @@ class SimpleJobStorage {
       type: 'job_status'
     };
 
+    console.log(`💾 Attempting to save job ${jobId} with useBlobs=${this.useBlobs}`);
+
     if (this.useBlobs && this.store) {
       try {
         const key = `job_${jobId}_status`;
@@ -34,30 +36,39 @@ class SimpleJobStorage {
         console.log(`✅ [Netlify Blobs] Saved job status for ${jobId}:`, statusData.status);
         return;
       } catch (error) {
-        console.warn('⚠️ Failed to save to Netlify Blobs, falling back to memory:', error.message);
+        console.error('❌ Failed to save to Netlify Blobs:', error);
+        this.useBlobs = false; // Disable for future attempts
       }
     }
 
     // Fallback to memory storage
     this.memoryStorage.set(jobId, data);
-    console.log(`✅ [Memory Storage] Saved job ${jobId}:`, statusData.status);
+    console.log(`⚠️ [Memory Storage] Saved job ${jobId}:`, statusData.status, 'NOTE: Memory storage not persistent!');
   }
 
   async getJobStatus(jobId) {
+    console.log(`🔍 Looking for job ${jobId} with useBlobs=${this.useBlobs}`);
+    
     if (this.useBlobs && this.store) {
       try {
         const key = `job_${jobId}_status`;
         const data = await this.store.get(key);
         if (data) {
+          console.log(`✅ [Netlify Blobs] Found job ${jobId}`);
           return JSON.parse(data);
+        } else {
+          console.log(`❌ [Netlify Blobs] Job ${jobId} not found in blobs`);
         }
       } catch (error) {
-        console.warn('⚠️ Failed to get from Netlify Blobs, falling back to memory:', error.message);
+        console.error('❌ Failed to get from Netlify Blobs:', error);
+        this.useBlobs = false;
       }
     }
 
     // Fallback to memory storage
-    return this.memoryStorage.get(jobId) || null;
+    const memoryResult = this.memoryStorage.get(jobId) || null;
+    console.log(`🔍 [Memory Storage] Job ${jobId}:`, memoryResult ? 'FOUND' : 'NOT FOUND');
+    return memoryResult;
   }
 
   async updateJobStatus(jobId, statusUpdate) {
