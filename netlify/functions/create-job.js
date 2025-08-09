@@ -59,12 +59,12 @@ exports.handler = async (event, context) => {
     }
 
     // Delegate to the content generation function
-    console.log('🔄 Delegating to content-generate-simple function');
+    console.log('🔄 Delegating to content-generate-background function');
     
     try {
       const generateUrl = process.env.NODE_ENV === 'production'
-        ? `https://${process.env.NETLIFY_SITE_URL || event.headers.host}/.netlify/functions/content-generate-simple`
-        : 'http://localhost:8888/.netlify/functions/content-generate-simple';
+        ? `https://${process.env.NETLIFY_SITE_URL || event.headers.host}/.netlify/functions/content-generate-background`
+        : 'http://localhost:8888/.netlify/functions/content-generate-background';
 
       console.log('📞 Calling content generation at:', generateUrl);
 
@@ -107,7 +107,7 @@ exports.handler = async (event, context) => {
       jobId,
       status: 'queued',
       message: 'Job created and queued for processing',
-      statusUrl: `/.netlify/functions/job-status-simple?jobId=${jobId}`,
+      statusUrl: `/.netlify/functions/job-status?jobId=${jobId}`,
       createdAt: initialJobStatus.createdAt,
       usingBlobs
     };
