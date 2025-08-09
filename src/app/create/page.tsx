@@ -132,7 +132,7 @@ export default function CreateContent() {
         brandGuidelines: formData.brandGuidelines?.trim()
       };
 
-      const response = await fetch('/api/content/generate-background', {
+      const response = await fetch('/api/multi-agent/job', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,8 +147,8 @@ export default function CreateContent() {
 
       const { jobId } = await response.json();
       
-      // Redirect to background workflow page with the job ID  
-      window.location.href = `/workflow-bg?jobId=${jobId}`;
+      // Redirect to new multi-agent workflow page with the job ID  
+      window.location.href = `/workflow-b/g?jobId=${jobId}`;
       
     } catch (error) {
       console.error('Error starting content generation:', error);
