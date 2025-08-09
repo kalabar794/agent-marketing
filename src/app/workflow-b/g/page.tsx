@@ -127,7 +127,7 @@ function MultiAgentWorkflowContent() {
     let cancelled = false;
     const fetchJob = async () => {
       try {
-        const res = await fetch(`/api/multi-agent/job?jobId=${jobId}`);
+        const res = await fetch(`/api/multi-agent/job/?jobId=${jobId}`);
         if (!res.ok) {
           if (res.status === 404) {
             const data = await res.json().catch(() => null);

@@ -132,7 +132,7 @@ export default function CreateContent() {
         brandGuidelines: formData.brandGuidelines?.trim()
       };
 
-      const response = await fetch('/api/multi-agent/job', {
+      const response = await fetch('/api/multi-agent/job/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
