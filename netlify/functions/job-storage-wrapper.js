@@ -1,7 +1,7 @@
 // Simple JavaScript wrapper for job storage
 // This avoids TypeScript import issues in Netlify Functions
 
-const { KAGStore } = require('@netlify/blobs'); // Using KAGStore directly
+const { getStore } = require('@netlify/blobs'); // Using getStore correctly
 
 class SimpleJobStorage {
   constructor() {
@@ -10,7 +10,7 @@ class SimpleJobStorage {
     
     try {
       // Try to initialize Netlify Blobs
-      this.store = KAGStore('marketing-agent-storage');
+      this.store = getStore('marketing-agent-storage');
       this.useBlobs = true;
       console.log('📦 Using Netlify Blobs for job storage');
     } catch (error) {

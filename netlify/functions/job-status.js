@@ -19,12 +19,12 @@ export default async (req, context) => {
     
     console.log(`📊 Checking status for job: ${jobId}`);
     
-    // Initialize Netlify Blobs
+    // Initialize Netlify Blobs using same store and key format as job-storage-wrapper
     const { getStore } = await import('@netlify/blobs');
-    const store = getStore('marketing-jobs');
+    const store = getStore('marketing-agent-storage');
     
-    // Get job data
-    const jobData = await store.get(`job:${jobId}`);
+    // Get job data using same key format as job-storage-wrapper
+    const jobData = await store.get(`job_${jobId}_status`);
     
     if (!jobData) {
       return new Response(JSON.stringify({
